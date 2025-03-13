@@ -15,9 +15,9 @@ aws sts get-caller-identity
 You should see something like this:
 ```json
 {
-    "UserId": "AIDAQEIP3PTMKHCDS3C7M",
-    "Account": "009160064216",
-    "Arn": "arn:aws:iam::009160064216:user/mjolsen"
+    "UserId": "AIFBZRJIQN2ONP4ET4EK4",
+    "Account": "655602346534",
+    "Arn": "arn:aws:iam::655602346534:user/mjolsen"
 }
 ```
 
@@ -30,3 +30,6 @@ You should see something like this:
 ```sh
 aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.json
 ```
+
+### Diagram the Application
+- [text](https://lucid.app/lucidchart/bc1bc027-2bf5-43e0-ad09-948391356f60/edit?viewport_loc=-316%2C-40%2C2992%2C1473%2C0_0&invitationId=inv_6f7aaa06-f08d-41c1-8883-26557e762317)

@@ -25,7 +25,7 @@ You should see something like this:
 - [aws cloudwatch put-metric-alarm](https://docs.aws.amazon.com/cli/latest/reference/cloudwatch/put-metric-alarm.html)
 - [Create an Alarm via AWS CLI](https://aws.amazon.com/premiumsupport/knowledge-center/cloudwatch-estimatedcharges-alarm/)
 - We need to update the configuration json script with the TopicARN we generated earlier
-- We are just a json file because --metrics is is required for expressions and so its easier to us a JSON file.
+- We are just using a json file because --metrics is required for expressions and it's easier to use a JSON file.
 
 ```sh
 aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.json
@@ -33,4 +33,4 @@ aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.js
 
 ### Diagram the Application
 - [Link to Cruddur Logical Diagram](https://lucid.app/lucidchart/bc1bc027-2bf5-43e0-ad09-948391356f60/edit?viewport_loc=-316%2C-40%2C2992%2C1473%2C0_0&invitationId=inv_6f7aaa06-f08d-41c1-8883-26557e762317)
-![Cruddur Logical Diagram](https://github.com/mjolsen-sw/aws-cruddur/blob/main/journal/assets/Cruddur%20Logical%20Diagram.png)
+- ![Cruddur Logical Diagram](https://github.com/mjolsen-sw/aws-cruddur/blob/main/journal/assets/Cruddur%20Logical%20Diagram.png)

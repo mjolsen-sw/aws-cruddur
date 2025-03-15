@@ -132,3 +132,9 @@ To stop the containers without removing them:
 docker compose stop
 docker-compose stop
 ```
+
+#### Restart
+```sh
+docker compose restart
+docker-compose restart
+```

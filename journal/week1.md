@@ -121,3 +121,14 @@ docker compose up
 docker-compose up
 ```
 
+#### Stop
+Run the command or right-click docker-compose.yml and select "Compose Down".
+```sh
+docker compose down
+docker-compose down
+```
+To stop the containers without removing them:
+```sh
+docker compose stop
+docker-compose stop
+```

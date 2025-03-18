@@ -22,6 +22,6 @@ class UserActivities:
           'expires_at': (now + timedelta(days=31)).isoformat()
         }]
         model['data'] = results
-        segment.put_annotation('now', now.isoformat())
-        segment.put_annotation('results_length', len(model['data']))
+      segment.put_annotation('now', now.isoformat())
+      segment.put_annotation('results_length', len(model['data']))
       return model

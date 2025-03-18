@@ -22,7 +22,7 @@ Under backend-flask's environment:
 ```yml
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
-      OTL_SERVICE_NAME: "backend-flask"
+      OTEL_SERVICE_NAME: "backend-flask"
 ```
 
 ### Add to app.py
@@ -71,3 +71,110 @@ def run():
       now = datetime.now(timezone.utc).astimezone()
       span.set_attribute("app.now", now.isoformat())
 ```
+
+## AWS X-Ray
+### Instrument AWS X-Ray for Flask
+Set region environment variable.
+Linux:
+```sh
+export AWS_REGION="us-west-1"
+```
+Windows:
+```sh
+[Environment]::SetEnvironmentVariable("AWS_REGION", "us-west-1", "User")
+```
+Add dependencyt to **requirements.txt** and install:
+```sh
+aws-xray-sdk
+```
+```sh
+pip install -r requirements.txt
+```
+Add to app.y
+```python
+from aws_xray_sdk.core import xray_recorder
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+
+xray_url = os.getenv("AWS_XRAY_URL")
+xray_recorder.configure(service='Cruddur', dynamic_naming=xray_url)
+XRayMiddleware(app, xray_recorder)
+```
+
+### Setup AWS X-Ray Resources
+Use **aws/json/xray.json** to setup.
+Linux:
+```sh
+FLASK_ADDRESS="http://127.0.0.1:4567"
+aws xray create-group \
+   --group-name "Cruddur" \
+   --filter-expression "service(\"$FLASK_ADDRESS\") {fault OR error}"
+```
+Windows Powershell:
+```sh
+$env:FLASK_ADDRESS = "http://127.0.0.1:4567"
+aws xray create-group --group-name "Cruddur" --filter-expression 'service(\"backend-flask\")'
+```
+Then create the sampling rule:
+```sh
+aws xray create-sampling-rule --cli-input-json file://aws/json/xray.json
+```
+
+### Add Daemon Service to Docker Compose
+```yml
+  xray-daemon:
+    image: "amazon/aws-xray-daemon"
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_REGION: "us-west-1"
+    command:
+      - "xray -o -b xray-daemon:2000"
+    ports:
+      - 2000:2000/udp
+```
+Also add two environment variables for our backend container:
+```yml
+      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+      AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+```
+
+## CloudWatch Log
+Add to **requirements.txt** and install.
+```sh
+watchtower
+```
+Add to app.py:
+```python
+import watchtower
+import logging
+from time import strftime
+```
+```python
+# Configuring Logger to Use CloudWatch
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler()
+cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
+LOGGER.addHandler(console_handler)
+LOGGER.addHandler(cw_handler)
+LOGGER.info("some message")
+```
+```python
+@app.after_request
+def after_request(response):
+    timestamp = strftime('[%Y-%b-%d %H:%M]')
+    LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
+    return response
+```
+You can log something to an API endpoint. Example:
+```python
+LOGGER.info('Hello Cloudwatch! from  /api/activities/home')
+```
+Add 3 more environment variables for backend-flask in **docker-compose.yml**.
+(boto3 doesn't get AWS_REGION so pass default region instead):
+```yml
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+```
+

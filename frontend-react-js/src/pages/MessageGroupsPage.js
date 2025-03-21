@@ -5,7 +5,7 @@ import DesktopNavigation from '../components/DesktopNavigation';
 import MessageGroupFeed from '../components/MessageGroupFeed';
 
 // Authenication
-import { fetchUserAttributes } from '@aws-amplify/auth';
+import { fetchAuthSession } from '@aws-amplify/auth';
 
 export default function MessageGroupsPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -31,12 +31,14 @@ export default function MessageGroupsPage() {
   };
 
   const checkAuth = async () => {
-    fetchUserAttributes()
-      .then(attributes => {
+    fetchAuthSession()
+      .then(session => {
         setUser({
-          display_name: attributes.name,
-          handle: attributes.preferred_username
+          display_name: session.tokens.idToken.payload.name,
+          handle: session.tokens.idToken.payload.preferred_username,
+          accessToken: session.tokens?.accessToken?.toString()
         })
+        console.log("session", session)
       })
       .catch(err => console.log(err));
   };
@@ -46,8 +48,8 @@ export default function MessageGroupsPage() {
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
 
-    loadData();
     checkAuth();
+    loadData();
   }, [])
   return (
     <article>

@@ -16,20 +16,17 @@ export default function SigninPage() {
     setCognitoErrors('')
     event.preventDefault();
     try {
-      signIn({
+      const { nextStep } = await signIn({
         username: email,
         password: password
       })
-        .then(user => {
-          console.log(`User: ${user}`)
-          //localStorage.setItem("access_token", user.signInUserSession.accessToken.jwtToken)
-          window.location.href = "/"
-        })
-        .catch(err => { console.log('Error!', err) });
-    } catch (error) {
-      if (error.code == 'UserNotConfirmedException') {
+      console.log('nextStep:', nextStep)
+      if (nextStep.signInStep === "DONE") {
+        window.location.href = "/"
+      } else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
         window.location.href = "/confirm"
       }
+    } catch (error) {
       setCognitoErrors(error.message)
     }
     return false

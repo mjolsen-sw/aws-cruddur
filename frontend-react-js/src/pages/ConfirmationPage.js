@@ -48,7 +48,7 @@ export default function ConfirmationPage() {
         username: email,
         confirmationCode: code
       });
-      window.location.href = "/"
+      window.location.href = "/signin"
     } catch (error) {
       setCognitoErrors(error.message)
     }

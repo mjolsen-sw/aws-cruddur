@@ -20,10 +20,11 @@ export default function SigninPage() {
         username: email,
         password: password
       })
-      console.log('nextStep:', nextStep)
+
       if (nextStep.signInStep === "DONE") {
         window.location.href = "/"
-      } else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
+      }
+      else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
         window.location.href = "/confirm"
       }
     } catch (error) {

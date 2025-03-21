@@ -24,7 +24,7 @@ export default function ConfirmationPage() {
   const resend_code = async (event) => {
     setCognitoErrors('')
     try {
-      await resendSignUpCode(email);
+      await resendSignUpCode({ username: email });
       console.log('code resent successfully');
       setCodeSent(true)
     } catch (err) {
@@ -32,7 +32,7 @@ export default function ConfirmationPage() {
       // does cognito always return english
       // for this to be an okay match?
       console.log(err)
-      if (err.message == 'Username cannot be empty') {
+      if (err.message == 'username is required to signUp') {
         setCognitoErrors("You need to provide an email in order to send Resend Activiation Code")
       } else if (err.message == "Username/client id combination not found.") {
         setCognitoErrors("Email is invalid or cannot be found.")

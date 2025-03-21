@@ -7,8 +7,8 @@ import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+// Authenication
+import { fetchUserAttributes } from '@aws-amplify/auth';
 
 export default function NotificationsFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -36,14 +36,14 @@ export default function NotificationsFeedPage() {
   };
 
   const checkAuth = async () => {
-    console.log('checkAuth')
-    // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
-      setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
+    fetchUserAttributes()
+      .then(attributes => {
+        setUser({
+          display_name: attributes.name,
+          handle: attributes.preferred_username
+        })
       })
-    }
+      .catch(err => console.log(err));
   };
 
   React.useEffect(() => {

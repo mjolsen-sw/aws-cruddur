@@ -1,7 +1,8 @@
 import './RecoverPage.css';
 import React from "react";
-import {ReactComponent as Logo} from '../components/svg/logo.svg';
+import { ReactComponent as Logo } from '../components/svg/logo.svg';
 import { Link } from "react-router-dom";
+import { resetPassword, confirmResetPassword } from '@aws-amplify/auth';
 
 export default function RecoverPage() {
   // Username is Eamil
@@ -9,40 +10,58 @@ export default function RecoverPage() {
   const [password, setPassword] = React.useState('');
   const [passwordAgain, setPasswordAgain] = React.useState('');
   const [code, setCode] = React.useState('');
-  const [errors, setErrors] = React.useState('');
+  const [cognitoErrors, setCognitoErrors] = React.useState('');
   const [formState, setFormState] = React.useState('send_code');
 
   const onsubmit_send_code = async (event) => {
     event.preventDefault();
-    console.log('onsubmit_send_code')
+    setCognitoErrors('')
+    resetPassword({ username })
+      .then((data) => setFormState('confirm_code'))
+      .catch((err) => setCognitoErrors(err.message));
     return false
   }
+
   const onsubmit_confirm_code = async (event) => {
     event.preventDefault();
-    console.log('onsubmit_confirm_code')
+    setCognitoErrors('')
+    if (password == passwordAgain) {
+      confirmResetPassword({
+        username,
+        confirmationCode: code,
+        newPassword: password
+      })
+        .then((data) => setFormState('success'))
+        .catch((err) => setCognitoErrors(err.message));
+    } else {
+      setCognitoErrors('Passwords do not match')
+    }
     return false
   }
 
   const username_onchange = (event) => {
     setUsername(event.target.value);
   }
+
   const password_onchange = (event) => {
     setPassword(event.target.value);
   }
+
   const password_again_onchange = (event) => {
     setPasswordAgain(event.target.value);
   }
+
   const code_onchange = (event) => {
     setCode(event.target.value);
   }
 
-  let el_errors;
-  if (errors){
-    el_errors = <div className='errors'>{errors}</div>;
+  let errors;
+  if (cognitoErrors) {
+    errors = <div className='errors'>{cognitoErrors}</div>;
   }
 
   const send_code = () => {
-    return (<form 
+    return (<form
       className='recover_form'
       onSubmit={onsubmit_send_code}
     >
@@ -53,11 +72,11 @@ export default function RecoverPage() {
           <input
             type="text"
             value={username}
-            onChange={username_onchange} 
+            onChange={username_onchange}
           />
         </div>
       </div>
-      {el_errors}
+      {errors}
       <div className='submit'>
         <button type='submit'>Send Recovery Code</button>
       </div>
@@ -67,7 +86,7 @@ export default function RecoverPage() {
   }
 
   const confirm_code = () => {
-    return (<form 
+    return (<form
       className='recover_form'
       onSubmit={onsubmit_confirm_code}
     >
@@ -78,7 +97,7 @@ export default function RecoverPage() {
           <input
             type="text"
             value={code}
-            onChange={code_onchange} 
+            onChange={code_onchange}
           />
         </div>
         <div className='field text_field password'>
@@ -86,7 +105,7 @@ export default function RecoverPage() {
           <input
             type="password"
             value={password}
-            onChange={password_onchange} 
+            onChange={password_onchange}
           />
         </div>
         <div className='field text_field password_again'>
@@ -94,7 +113,7 @@ export default function RecoverPage() {
           <input
             type="password"
             value={passwordAgain}
-            onChange={password_again_onchange} 
+            onChange={password_again_onchange}
           />
         </div>
       </div>
@@ -112,7 +131,7 @@ export default function RecoverPage() {
       <Link to="/signin" className="proceed">Proceed to Signin</Link>
     </form>
     )
-    }
+  }
 
   let form;
   if (formState == 'send_code') {

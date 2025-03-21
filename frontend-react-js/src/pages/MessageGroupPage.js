@@ -2,13 +2,13 @@ import './MessageGroupPage.css';
 import React from "react";
 import { useParams } from 'react-router-dom';
 
-import DesktopNavigation  from '../components/DesktopNavigation';
+import DesktopNavigation from '../components/DesktopNavigation';
 import MessageGroupFeed from '../components/MessageGroupFeed';
 import MessagesFeed from '../components/MessageFeed';
 import MessagesForm from '../components/MessageForm';
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+// Authenication
+import { fetchUserAttributes } from '@aws-amplify/auth';
 
 export default function MessageGroupPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -33,7 +33,7 @@ export default function MessageGroupPage() {
     } catch (err) {
       console.log(err);
     }
-  };  
+  };
 
   const loadMessageGroupData = async () => {
     try {
@@ -51,20 +51,20 @@ export default function MessageGroupPage() {
     } catch (err) {
       console.log(err);
     }
-  };  
-
-  const checkAuth = async () => {
-    console.log('checkAuth')
-    // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
-      setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
-      })
-    }
   };
 
-  React.useEffect(()=>{
+  const checkAuth = async () => {
+    fetchUserAttributes()
+      .then(attributes => {
+        setUser({
+          display_name: attributes.name,
+          handle: attributes.preferred_username
+        })
+      })
+      .catch(err => console.log(err));
+  };
+
+  React.useEffect(() => {
     //prevents double call
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;

@@ -2,13 +2,13 @@ import './UserFeedPage.css';
 import React from "react";
 import { useParams } from 'react-router-dom';
 
-import DesktopNavigation  from '../components/DesktopNavigation';
-import DesktopSidebar     from '../components/DesktopSidebar';
+import DesktopNavigation from '../components/DesktopNavigation';
+import DesktopSidebar from '../components/DesktopSidebar';
 import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+// Authenication
+import { fetchUserAttributes } from '@aws-amplify/auth';
 
 export default function UserFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -37,17 +37,17 @@ export default function UserFeedPage() {
   };
 
   const checkAuth = async () => {
-    console.log('checkAuth')
-    // [TODO] Authenication
-    if (Cookies.get('user.logged_in')) {
-      setUser({
-        display_name: Cookies.get('user.name'),
-        handle: Cookies.get('user.username')
+    fetchUserAttributes()
+      .then(attributes => {
+        setUser({
+          display_name: attributes.name,
+          handle: attributes.preferred_username
+        })
       })
-    }
+      .catch(err => console.log(err));
   };
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     //prevents double call
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;

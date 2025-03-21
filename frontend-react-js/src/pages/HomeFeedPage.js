@@ -8,7 +8,7 @@ import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
 // Authenication
-import { getCurrentUser } from '@aws-amplify/auth';
+import { fetchUserAttributes } from '@aws-amplify/auth';
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -35,24 +35,15 @@ export default function HomeFeedPage() {
     }
   };
 
-  // check if we are authenicated
   const checkAuth = async () => {
-    getCurrentUser({
-      // Optional, By default is false. 
-      // If set to true, this call will send a 
-      // request to Cognito to get the latest user data
-      bypassCache: false
-    })
-      .then((user) => {
-        console.log('user', user);
-        return getCurrentUser()
-      }).then((cognito_user) => {
+    fetchUserAttributes()
+      .then(attributes => {
         setUser({
-          display_name: cognito_user.attributes.name,
-          handle: cognito_user.attributes.preferred_username
+          display_name: attributes.name,
+          handle: attributes.preferred_username
         })
       })
-      .catch((err) => console.log(err));
+      .catch(err => console.log(err));
   };
 
   React.useEffect(() => {

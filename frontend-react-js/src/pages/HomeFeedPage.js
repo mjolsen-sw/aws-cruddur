@@ -16,19 +16,22 @@ export default function HomeFeedPage() {
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
+  const [accessToken, setAccessToken] = React.useState(null);
+  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
-      const res = await fetch(backend_url, {
-        method: "GET"
-      });
+      let init = { method: "GET" };
+      if (accessToken)
+        init.headers = { Authorization: `Bearer ${accessToken}` };
+      const res = await fetch(backend_url, init);
       let resJson = await res.json();
       if (res.status === 200) {
         setActivities(resJson)
       } else {
-        console.log(res)
+        console.log(res);
       }
     } catch (err) {
       console.log(err);
@@ -38,24 +41,34 @@ export default function HomeFeedPage() {
   const checkAuth = async () => {
     fetchAuthSession()
       .then(session => {
-        setUser({
-          display_name: session.tokens.idToken.payload.name,
-          handle: session.tokens.idToken.payload.preferred_username,
-          accessToken: session.tokens?.accessToken?.toString()
-        })
-        console.log("session", session)
+        if (session.tokens) {
+          setUser({
+            display_name: session.tokens.idToken.payload.name,
+            handle: session.tokens.idToken.payload.preferred_username
+          });
+          setAccessToken(session.tokens?.accessToken?.toString());
+        }
+        else {
+          setAccessToken("");
+        }
       })
       .catch(err => console.log(err));
   };
 
   React.useEffect(() => {
-    //prevents double call
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
+    if (authFetchedRef.current) return;
+    authFetchedRef.current = true;
 
     checkAuth();
-    loadData();
-  }, [])
+  }, []);
+
+  React.useEffect(() => {
+    if (accessToken) {
+      if (dataFetchedRef.current) return;
+      dataFetchedRef.current = true;
+      loadData();
+    }
+  }, [accessToken]);
 
   return (
     <article>

@@ -14,6 +14,8 @@ export default function UserFeedPage() {
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [user, setUser] = React.useState(null);
+  const [accessToken, setAccessToken] = React.useState(null);
+  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
 
   const params = useParams();
@@ -39,24 +41,35 @@ export default function UserFeedPage() {
   const checkAuth = async () => {
     fetchAuthSession()
       .then(session => {
-        setUser({
-          display_name: session.tokens.idToken.payload.name,
-          handle: session.tokens.idToken.payload.preferred_username,
-          accessToken: session.tokens?.accessToken?.toString()
-        })
-        console.log("session", session)
+        if (session.tokens) {
+          setUser({
+            display_name: session.tokens.idToken.payload.name,
+            handle: session.tokens.idToken.payload.preferred_username
+          });
+          setAccessToken(session.tokens?.accessToken?.toString());
+        }
+        else {
+          setAccessToken("");
+        }
       })
       .catch(err => console.log(err));
   };
 
   React.useEffect(() => {
     //prevents double call
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
+    if (authFetchedRef.current) return;
+    authFetchedRef.current = true;
 
     checkAuth();
-    loadData();
   }, [])
+
+  React.useEffect(() => {
+    if (accessToken) {
+      if (dataFetchedRef.current) return;
+      dataFetchedRef.current = true;
+      loadData();
+    }
+  }, [accessToken]);
 
   return (
     <article>

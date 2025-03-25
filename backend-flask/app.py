@@ -1,6 +1,6 @@
-from flask import Flask
-from flask import request
+from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
+from functools import wraps
 import os
 
 # honeycomb.io
@@ -12,6 +12,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, ConsoleSpanExporter
 
+from lib.cognito_jwt_token import *
 from services.home_activities import *
 from services.notifications_activities import *
 from services.user_activities import *
@@ -44,6 +45,13 @@ tracer = trace.get_tracer(__name__)
 
 app = Flask(__name__)
 
+# AWS Cognito
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv('AWS_COGNITO_USER_POOL_ID'),
+  user_pool_client_id=os.getenv('AWS_COGNITO_USER_POOL_CLIENT_ID'),
+  region=os.getenv('AWS_DEFAULT_REGION')
+)
+
 # honeycomb.io
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
@@ -59,12 +67,12 @@ from flask import got_request_exception
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
-origins = [frontend, backend]
+origins = [frontend, backend, "172.20.176.1"]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers="content-type,if-modified-since",
+  headers=['Content-Type', 'Authorization'], 
+  expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )
 
@@ -99,10 +107,28 @@ def init_rollbar():
 #     LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
 #     return response
 
-# @app.route('/rollbar/test')
-# def rollbar_test():
-#     rollbar.report_message('Hello World!', 'warning')
-#     return "Hello World!"
+def auth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+
+        token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
+        try:
+            user_info = cognito_jwt_token.verify(token)
+        except TokenVerifyError as e:
+            return jsonify({"error": str(e)}), 400
+        except FlaskAWSCognitoError as e:
+            return jsonify({"error": str(e)}), 400
+
+        if "error" in user_info:
+            return jsonify(user_info), 401  # Unauthorized
+        
+        request.user_info = user_info  # Store user info in request context
+        return f(*args, **kwargs)
+    
+    return decorated_function
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
@@ -123,7 +149,6 @@ def data_messages(handle):
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
@@ -137,10 +162,13 @@ def data_create_message():
     return model['errors'], 422
   else:
     return model['data'], 200
-  return
 
 @app.route("/api/activities/home", methods=['GET'])
+@auth_required
 def data_home():
+  print("user_info:", request.user_info)
+  print("username:", request.user_info["username"])
+  
   data = HomeActivities.run()
   return data, 200
 

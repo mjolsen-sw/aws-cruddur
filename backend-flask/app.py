@@ -110,22 +110,26 @@ def init_rollbar():
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            return jsonify({"error": "Missing token"}), 401
+      request.user_info = None
+      auth_header = request.headers.get("Authorization")
 
-        request.user_info = None
-        token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
+      if auth_header:
         try:
-            user_info = cognito_jwt_token.verify(token)
+          token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
+          user_info = cognito_jwt_token.verify(token)
+          request.user_info = user_info  # Store user info in request context
         except TokenVerifyError as e:
-            print(f"TokenVerifyError: {str(e)}")
+          print(f"TokenVerifyError: {str(e)}")
         except FlaskAWSCognitoError as e:
-            print(f"FlaskAWSCognitoError: {str(e)}")
-        
-        request.user_info = user_info  # Store user info in request context
-        return f(*args, **kwargs)
-    
+          print(f"FlaskAWSCognitoError: {str(e)}")
+        except Exception as e:
+          print(f"Unexcepted exception: {str(e)}")
+
+      else:
+        print("Missing token")
+
+      return f(*args, **kwargs)
+
     return decorated_function
 
 @app.route("/api/message_groups", methods=['GET'])
@@ -164,10 +168,11 @@ def data_create_message():
 @app.route("/api/activities/home", methods=['GET'])
 @auth_required
 def data_home():
-  print("user_info:", request.user_info)
-  print("username:", request.user_info["username"])
+  if request.user_info:
+    print("user_info:", request.user_info)
+    print("username:", request.user_info["username"])
   
-  data = HomeActivities.run()
+  data = HomeActivities.run(request.user_info)
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])

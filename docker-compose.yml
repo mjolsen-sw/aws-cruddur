@@ -6,8 +6,8 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
       OTEL_SERVICE_NAME: "backend-flask"
-      AWS_XRAY_URL: "127.0.0.1:4567"
-      AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+      # AWS_XRAY_URL: "127.0.0.1:4567"
+      # AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
       AWS_DEFAULT_REGION: "${AWS_REGION}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
@@ -31,16 +31,16 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend-react-js:/frontend-react-js
-  # db:
-  #   image: postgres:13-alpine
-  #   restart: always
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=password
-  #   ports:
-  #     - '5431:5432'
-  #   volumes:
-  #     - db:/var/lib/postgresql/data
+  db:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - '2345:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
   # xray-daemon:
   #   image: "amazon/aws-xray-daemon"
   #   environment:
@@ -71,6 +71,6 @@ networks:
     driver: bridge
     name: cruddur
 
-# volumes:
-#   db:
-#     driver: local
+volumes:
+  db:
+    driver: local

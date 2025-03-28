@@ -6,7 +6,7 @@ npm i aws-amplify --save
 ```
 
 ### Configuration
-Hook up cognito pool to our code in **App.js**:
+Hook up cognito pool to our code in `App.js`:
 ```javascript
 import { Amplify } from 'aws-amplify';
 
@@ -17,7 +17,7 @@ Amplify.configure({
   "aws_user_pools_web_client_id": process.env.REACT_APP_CLIENT_ID
 });
 ```
-Add to frontend-react-js environment variables in docker-compose.yml:
+Add to frontend-react-js environment variables in `docker-compose.yml`:
 ```sh
       REACT_APP_AWS_PROJECT_REGION: "${AWS_REGION}"
       REACT_APP_AWS_COGNITO_REGION: "${AWS_REGION}"
@@ -66,7 +66,7 @@ import { fetchAuthSession } from '@aws-amplify/auth';
     }
   }, [accessToken]);
 ```
-For **ConfirmationPage.js**:
+For `ConfirmationPage.js`:
 ```javascript
 import { confirmSignUp, resendSignUpCode } from '@aws-amplify/auth';
 
@@ -106,7 +106,7 @@ import { confirmSignUp, resendSignUpCode } from '@aws-amplify/auth';
     return false
   }
 ```
-For **RecoverPage.js**:
+For `RecoverPage.js`:
 ```javascript
 import { resetPassword, confirmResetPassword } from '@aws-amplify/auth';
 
@@ -136,7 +136,7 @@ import { resetPassword, confirmResetPassword } from '@aws-amplify/auth';
     return false
   }
 ```
-For **SigninPage.js**:
+For `SigninPage.js`:
 ```javascript
 import { signIn } from '@aws-amplify/auth';
 
@@ -161,7 +161,7 @@ import { signIn } from '@aws-amplify/auth';
     return false
   }
 ```
-For **SignupPage.js**:
+For `SignupPage.js`:
 ```javascript
 import { signUp } from '@aws-amplify/auth';
 

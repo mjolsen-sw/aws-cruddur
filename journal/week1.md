@@ -32,7 +32,7 @@ Run with implicitly set environment variables:
 ```sh
 docker run --rm -p 4567:4567 -it -e FRONTEND_URL='*' -e BACKEND_URL='*' backend-flask
 ```
-Run in background (**-d** flag):
+Run in background (`-d` flag):
 ```sh
 docker container run --rm -p 4567:4567 -d backend-flask
 ```
@@ -77,7 +77,7 @@ docker run -p 3000:3000 -d frontend-react-js
 
 ### Docker Compose
 #### docker-compose.yml
-- To work locally without gitpod, convert to using localhost in the given docker-compose.yml file:
+- To work locally without gitpod, convert to using localhost in the given `docker-compose.yml` file:
 - To get CORS to work I had to use 127.0.0.1 instead of localhost
 ```yml
 version: "3.8"
@@ -115,14 +115,14 @@ networks:
 ```
 
 #### Run
-Run the command or right-click docker-compose.yml and select "Compose Up".
+Run the command or right-click `docker-compose.yml` and select "Compose Up".
 ```sh
 docker compose up
 docker-compose up
 ```
 
 #### Stop
-Run the command or right-click docker-compose.yml and select "Compose Down".
+Run the command or right-click `docker-compose.yml` and select "Compose Down".
 ```sh
 docker compose down
 docker-compose down

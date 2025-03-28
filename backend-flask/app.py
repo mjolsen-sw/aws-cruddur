@@ -114,16 +114,14 @@ def auth_required(f):
         if not auth_header:
             return jsonify({"error": "Missing token"}), 401
 
+        request.user_info = None
         token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
         try:
             user_info = cognito_jwt_token.verify(token)
         except TokenVerifyError as e:
-            return jsonify({"error": str(e)}), 400
+            print(f"TokenVerifyError: {str(e)}")
         except FlaskAWSCognitoError as e:
-            return jsonify({"error": str(e)}), 400
-
-        if "error" in user_info:
-            return jsonify(user_info), 401  # Unauthorized
+            print(f"FlaskAWSCognitoError: {str(e)}")
         
         request.user_info = user_info  # Store user info in request context
         return f(*args, **kwargs)

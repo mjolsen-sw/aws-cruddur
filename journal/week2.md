@@ -83,7 +83,7 @@ Windows:
 ```sh
 [Environment]::SetEnvironmentVariable("AWS_REGION", "us-west-1", "User")
 ```
-Add dependencyt to **requirements.txt** and install:
+Add dependencyt to `requirements.txt` and install:
 ```sh
 aws-xray-sdk
 ```
@@ -101,7 +101,7 @@ XRayMiddleware(app, xray_recorder)
 ```
 
 ### Setup AWS X-Ray Resources
-Use **aws/json/xray.json** to setup.
+Use `aws/json/xray.json` to setup.
 Linux:
 ```sh
 FLASK_ADDRESS="http://127.0.0.1:4567"
@@ -134,12 +134,12 @@ aws xray create-sampling-rule --cli-input-json file://aws/json/xray.json
 ```
 Also add two environment variables for our backend container:
 ```yml
-      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+      AWS_XRAY_URL: "127.0.0.1:4567"
       AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
 ```
 
 ## CloudWatch Log
-Add to **requirements.txt** and install.
+Add to `requirements.txt` and install.
 ```sh
 watchtower
 ```
@@ -170,7 +170,7 @@ You can log something to an API endpoint. Example:
 ```python
 LOGGER.info('Hello Cloudwatch! from  /api/activities/home')
 ```
-Add 3 more environment variables for backend-flask in **docker-compose.yml**.
+Add 3 more environment variables for backend-flask in `docker-compose.yml`.
 (boto3 doesn't get AWS_REGION so pass default region instead):
 ```yml
       AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"

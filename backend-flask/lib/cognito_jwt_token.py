@@ -36,9 +36,9 @@ class CognitoJwtToken:
                 issuer=f"https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool_id}"
             )
         except jwt.ExpiredSignatureError:
-            return {"error": "Token has expired"}
+            raise TokenVerifyError("Token has expired")
         except jwt.InvalidIssuerError as e:
-            raise {"error": "Invalid Token Issuer"}
+            raise TokenVerifyError("Invalid Token Issuer")
         except Exception as e:
             raise FlaskAWSCognitoError(str(e))
 

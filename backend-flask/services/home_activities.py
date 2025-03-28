@@ -6,7 +6,7 @@ from lib.db import pool, query_wrap_array
 tracer = trace.get_tracer("home.activities")
 
 class HomeActivities:
-  def run(user_info=None):
+  def run(username=None):
     with tracer.start_as_current_span("home-activities-mock-data"):
       span = trace.get_current_span()
       now = datetime.now(timezone.utc).astimezone()
@@ -35,6 +35,6 @@ class HomeActivities:
           # this will return a tuple
           # the first field being the data
           json = cur.fetchall()
-      print(json[0])
-      span.set_attribute("app.result_length", len(json[0]))
-      return json[0]
+      print(json)
+      span.set_attribute("app.result_length", len(json))
+      return json

@@ -110,14 +110,14 @@ def init_rollbar():
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-      request.user_info = None
+      request.username = None
       auth_header = request.headers.get("Authorization")
 
       if auth_header:
         try:
           token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
           user_info = cognito_jwt_token.verify(token)
-          request.user_info = user_info  # Store user info in request context
+          request.username = user_info["username"]  # Store user in request context
         except TokenVerifyError as e:
           print(f"TokenVerifyError: {str(e)}")
         except FlaskAWSCognitoError as e:
@@ -168,11 +168,10 @@ def data_create_message():
 @app.route("/api/activities/home", methods=['GET'])
 @auth_required
 def data_home():
-  if request.user_info:
-    print("user_info:", request.user_info)
-    print("username:", request.user_info["username"])
+  if request.username:
+    print("username:", request.username)
   
-  data = HomeActivities.run(request.user_info)
+  data = HomeActivities.run(request.username)
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])

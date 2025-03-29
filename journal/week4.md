@@ -112,3 +112,8 @@ DROP TABLE IF EXISTS public.reply;
 DROP TABLE IF EXISTS public.message;
 DROP TABLE IF EXISTS public.message_group;
 ```
+### psycogp DB connection string with WSL
+To allow psycogp to connect to Docker container in WSL, use hostname **host.docker.internal**:
+```sh
+export PP_CONNECTION_URL="postgresql://username:password@host.docker.internal:2345/cruddur";
+```

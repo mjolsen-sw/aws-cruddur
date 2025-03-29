@@ -7,7 +7,7 @@ tracer = trace.get_tracer("home.activities")
 
 class HomeActivities:
   def run(username=None):
-    with tracer.start_as_current_span("home-activities-mock-data"):
+    with tracer.start_as_current_span("home-activities-seeded-data"):
       span = trace.get_current_span()
       now = datetime.now(timezone.utc).astimezone()
       span.set_attribute("app.now", now.isoformat())
@@ -35,6 +35,7 @@ class HomeActivities:
           # this will return a tuple
           # the first field being the data
           json = cur.fetchall()
-      print(json)
-      span.set_attribute("app.result_length", len(json))
-      return json
+      data = json[0][0]
+      print(data)
+      span.set_attribute("app.result_length", len(data))
+      return data

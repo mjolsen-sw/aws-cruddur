@@ -29,7 +29,7 @@ export default function HomeFeedPage() {
       const res = await fetch(backend_url, init);
       let resJson = await res.json();
       if (res.status === 200) {
-        setActivities(resJson)
+        setActivities(resJson);
       } else {
         console.log(res);
       }
@@ -63,12 +63,12 @@ export default function HomeFeedPage() {
   }, []);
 
   React.useEffect(() => {
-    if (accessToken) {
+    if (accessToken != null) {
       if (dataFetchedRef.current) return;
       dataFetchedRef.current = true;
       loadData();
     }
-  }, [accessToken]);
+  }, [accessToken, loadData]);
 
   return (
     <article>

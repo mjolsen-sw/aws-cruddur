@@ -117,3 +117,72 @@ To allow psycogp to connect to Docker container in WSL, use hostname **host.dock
 ```sh
 export PP_CONNECTION_URL="postgresql://username:password@host.docker.internal:2345/cruddur";
 ```
+### Lambda to insert new users into DB
+#### Create Labmda
+ENV variables used (best practice would be parameter store or secrets manager):
+```sh
+PG_HOSTNAME='db.endpoint.url'
+PG_DATABASE='cruddur'
+PG_USERNAME='cruddur'
+PG_PASSWORD='password'
+```
+The function:
+```python
+import json
+import psycopg2
+
+def lambda_handler(event, context):
+  user = event['request']['userAttributes']
+  print("user:", user)
+  try:
+    conn = psycopg2.connect(
+      host=(os.getenv('PG_HOSTNAME')),
+      database=(os.getenv('PG_DATABASE')),
+      user=(os.getenv('PG_USERNAME')),
+      password=(os.getenv('PG_SECRET'))
+    )
+    cur = conn.cursor()
+    sql = f"""
+      INSERT INTO users (
+        display_name,
+        handle,
+        email,
+        cognito_user_id
+        )
+      VALUES(
+        {user['name']},
+        {user['preferred_username']},
+        {user['sub']}
+        )
+    """
+    cur.execute(sql)
+    conn.commit() 
+
+  except (Exception, psycopg2.DatabaseError) as error:
+    print(error)
+      
+  finally:
+    if conn is not None:
+      cur.close()
+      conn.close()
+      print('Database connection closed.')
+
+  return event
+```
+##### Creating psycopg2 Lambda Layer
+###### Create new directory for the layer in `aws/lambdas/`
+```sh
+mkdir -p psycopg2-layer/python
+cd psycopg2-layer/python
+```
+###### Install psycopg-binary with python version used (ex. 3.10 on x86_64)
+```sh
+pip3 install --platform manylinux2014_x86_64 --target . --python-version 3.10 --only-binary=:all: psycopg2-binary
+```
+###### Package the Layer
+Zip the contents of the python directory:
+```sh
+cd ..
+zip -r psycopg2-layer.zip python
+```
+###### Upload to AWS Lambda

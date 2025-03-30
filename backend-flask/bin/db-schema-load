@@ -1,4 +1,5 @@
 #! /usr/bin/bash
+
 schema_path="$(realpath .)/db/schema.sql"
 echo $schema_path
 

@@ -1,4 +1,5 @@
 #! /usr/bin/bash
+
 seed_path="$(realpath .)/db/seed.sql"
 echo $seed_path
 

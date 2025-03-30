@@ -68,7 +68,7 @@ export default function HomeFeedPage() {
       dataFetchedRef.current = true;
       loadData();
     }
-  }, [accessToken, loadData]);
+  }, [accessToken]);
 
   return (
     <article>

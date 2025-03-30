@@ -1,6 +1,6 @@
 import './ConfirmationPage.css';
 import React from "react";
-import { useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as Logo } from '../components/svg/logo.svg';
 
 // Authenication
@@ -11,8 +11,7 @@ export default function ConfirmationPage() {
   const [code, setCode] = React.useState('');
   const [cognitoErrors, setCognitoErrors] = React.useState('');
   const [codeSent, setCodeSent] = React.useState(false);
-
-  const params = useParams();
+  const [searchParams] = useSearchParams();
 
   const code_onchange = (event) => {
     setCode(event.target.value);
@@ -69,10 +68,11 @@ export default function ConfirmationPage() {
   }
 
   React.useEffect(() => {
-    if (params.email) {
-      setEmail(params.email)
+    const email = searchParams.get("email")
+    if (email) {
+      setEmail(email)
     }
-  }, [])
+  }, [searchParams])
 
   return (
     <article className="confirm-article">

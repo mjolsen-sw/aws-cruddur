@@ -119,56 +119,78 @@ export PP_CONNECTION_URL="postgresql://username:password@host.docker.internal:23
 ```
 ### Lambda to insert new users into DB
 #### Create Labmda
-ENV variables used (best practice would be parameter store or secrets manager):
-```sh
-PG_HOSTNAME='db.endpoint.url'
-PG_DATABASE='cruddur'
-PG_USERNAME='cruddur'
-PG_PASSWORD='password'
-```
-The function:
+##### Code
+Add the following code and then Deploy (Ctrl+Shift+U):
 ```python
 import json
+import os
 import psycopg2
 
 def lambda_handler(event, context):
   user = event['request']['userAttributes']
-  print("user:", user)
   try:
     conn = psycopg2.connect(
       host=(os.getenv('PG_HOSTNAME')),
+      port=(os.getenv('PG_PORT')),
       database=(os.getenv('PG_DATABASE')),
       user=(os.getenv('PG_USERNAME')),
       password=(os.getenv('PG_SECRET'))
     )
     cur = conn.cursor()
-    sql = f"""
-      INSERT INTO users (
-        display_name,
-        handle,
-        email,
-        cognito_user_id
-        )
-      VALUES(
-        {user['name']},
-        {user['preferred_username']},
-        {user['sub']}
-        )
-    """
-    cur.execute(sql)
-    conn.commit() 
+    sql = """
+            INSERT INTO users (display_name, handle, email, cognito_user_id)
+            VALUES (%s, %s, %s, %s)
+        """
+    cur.execute(sql, (
+      user.get('name'),
+      user.get('preferred_username'),
+      user.get('email'),
+      user.get('sub')
+    ))
+    conn.commit()
 
   except (Exception, psycopg2.DatabaseError) as error:
     print(error)
       
   finally:
-    if conn is not None:
+    if conn in locals() and conn:
       cur.close()
       conn.close()
       print('Database connection closed.')
 
   return event
 ```
+###### Layers
+1. Package psycopg2 Layer by following directions below under `Creating psycopg2 Lambda Layer`
+2. Scroll down to `Layers` and click **Add a layer**
+3. Select `Custom Layers`
+4. Select the layer you uploaded and the version
+5. Click **Add**
+##### Configuration
+Under the lambda's **Configuration** section
+###### Environment variables
+Click **Environment variables** on the left and set the following (best practice would be parameter store or secrets manager)
+```sh
+PG_HOSTNAME='db.endpoint.url'
+PG_PORT='2345'
+PG_DATABASE='cruddur'
+PG_USERNAME='cruddur'
+PG_SECRET='password'
+```
+###### RDS databases
+1. Click **RDS databases** on left.
+2. Click **Connect to RDS database**
+3. Select "Use an existing database" and select the cruddur-db
+4. Click **Create** and wait for it to configure
+##### Set the lambda to trigger after user confirmation
+1. Go to `Amazon Cognito`
+2. Click `User pools` on the left sidebar
+3. Select your cruddur user pool
+4. Under `Authentication`, click **Extensions**
+5. Use **Trigger type** "Sign-up"
+6. Select "Post confirmation trigger"
+7. Assign the lambda you uploaded
+8. Click **Add Lambda trigger**
 ##### Creating psycopg2 Lambda Layer
 ###### Create new directory for the layer in `aws/lambdas/`
 ```sh
@@ -186,3 +208,10 @@ cd ..
 zip -r psycopg2-layer.zip python
 ```
 ###### Upload to AWS Lambda
+1. Open the AWS Lambda consol
+2. Navigate to "Layers" on the left sidebar
+3. Click "Create layer"
+4. Provide name (ex. psycopg2-python310-x86_64)
+5. Provide description (ex. Lambda Layer for psycopg2 using python 3.10 on x86_64 architecture)
+6. Upload the zip file
+7. Click "Create"

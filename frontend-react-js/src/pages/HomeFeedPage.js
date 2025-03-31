@@ -78,6 +78,7 @@ export default function HomeFeedPage() {
           popped={popped}
           setPopped={setPopped}
           setActivities={setActivities}
+          accessToken={accessToken}
         />
         <ReplyForm
           activity={replyActivity}

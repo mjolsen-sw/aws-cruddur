@@ -117,9 +117,9 @@ To allow psycogp to connect to Docker container in WSL, use hostname **host.dock
 ```sh
 export PP_CONNECTION_URL="postgresql://username:password@host.docker.internal:2345/cruddur";
 ```
-### Lambda to insert new users into DB
-#### Create Labmda
-##### Code
+## Lambda to insert new users into DB
+### Create Labmda
+#### Code
 Add the following code and then Deploy (Ctrl+Shift+U):
 ```python
 import json
@@ -160,15 +160,15 @@ def lambda_handler(event, context):
 
   return event
 ```
-###### Layers
+##### Layers
 1. Package psycopg2 Layer by following directions below under `Creating psycopg2 Lambda Layer`
 2. Scroll down to `Layers` and click **Add a layer**
 3. Select `Custom Layers`
 4. Select the layer you uploaded and the version
 5. Click **Add**
-##### Configuration
+#### Configuration
 Under the lambda's **Configuration** section
-###### Environment variables
+##### Environment variables
 Click **Environment variables** on the left and set the following (best practice would be parameter store or secrets manager)
 ```sh
 PG_HOSTNAME='db.endpoint.url'
@@ -177,12 +177,12 @@ PG_DATABASE='cruddur'
 PG_USERNAME='cruddur'
 PG_SECRET='password'
 ```
-###### RDS databases
+##### RDS databases
 1. Click **RDS databases** on left.
 2. Click **Connect to RDS database**
 3. Select "Use an existing database" and select the cruddur-db
 4. Click **Create** and wait for it to configure
-##### Set the lambda to trigger after user confirmation
+#### Set the lambda to trigger after user confirmation
 1. Go to `Amazon Cognito`
 2. Click `User pools` on the left sidebar
 3. Select your cruddur user pool
@@ -191,23 +191,23 @@ PG_SECRET='password'
 6. Select "Post confirmation trigger"
 7. Assign the lambda you uploaded
 8. Click **Add Lambda trigger**
-##### Creating psycopg2 Lambda Layer
-###### Create new directory for the layer in `aws/lambdas/`
+#### Creating psycopg2 Lambda Layer
+##### Create new directory for the layer in `aws/lambdas/`
 ```sh
 mkdir -p psycopg2-layer/python
 cd psycopg2-layer/python
 ```
-###### Install psycopg-binary with python version used (ex. 3.10 on x86_64)
+##### Install psycopg-binary with python version used (ex. 3.10 on x86_64)
 ```sh
 pip3 install --platform manylinux2014_x86_64 --target . --python-version 3.10 --only-binary=:all: psycopg2-binary
 ```
-###### Package the Layer
+##### Package the Layer
 Zip the contents of the python directory:
 ```sh
 cd ..
 zip -r psycopg2-layer.zip python
 ```
-###### Upload to AWS Lambda
+##### Upload to AWS Lambda
 1. Open the AWS Lambda consol
 2. Navigate to "Layers" on the left sidebar
 3. Click "Create layer"

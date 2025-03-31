@@ -107,7 +107,7 @@ def init_rollbar():
 #     LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
 #     return response
 
-def auth_required(f):
+def auth_checked(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
       request.username = None
@@ -166,7 +166,7 @@ def data_create_message():
     return model['data'], 200
 
 @app.route("/api/activities/home", methods=['GET'])
-@auth_required
+@auth_checked
 def data_home():
   if request.username:
     print("username:", request.username)
@@ -198,12 +198,15 @@ def data_search():
 
 @app.route("/api/activities", methods=['POST','OPTIONS'])
 @cross_origin()
+@auth_checked
 def data_activities():
-  user_handle  = 'andrewbrown'
+  cognito_user_id = request.username
+  if cognito_user_id is None:
+    return { 'error': 'Not logged in' }, 401
   message = request.json['message']
   ttl = request.json['ttl']
-  model = CreateActivity.run(message, user_handle, ttl)
-  if model['errors'] is not None:
+  model = CreateActivity.run(message, cognito_user_id, ttl)
+  if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200

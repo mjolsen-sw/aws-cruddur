@@ -79,26 +79,30 @@ class Db:
 
   # we want to commit data such as an insert
   # be sure to check for RETURNING in all uppercases
-  def query_commit(self, sql, params={}):
+  def query_commit(self, sql, params=None):
+    if params is None:
+      params = {}
     self.print_sql('commit with returning', sql)
 
     pattern = r"\bRETURNING\b"
-    is_returning_id = re.search(pattern, sql)
+    is_returning_data = re.search(pattern, sql)
 
     try:
       with self._pool.connection() as conn:
         cur =  conn.cursor()
         cur.execute(sql, params)
-        if is_returning_id:
-          returning_id = cur.fetchone()[0]
+        if is_returning_data:
+          returning_data = cur.fetchone()
         conn.commit() 
-        if is_returning_id:
-          return returning_id
+        if is_returning_data:
+          return returning_data
     except Exception as err:
       self.print_sql_err(err)
 
   # when we want to return a json object
-  def query_array_json(self, sql, params={}):
+  def query_array_json(self, sql, params=None):
+    if params is None:
+      params = {}
     self.print_sql('array', sql)
 
     wrapped_sql = self.query_wrap_array(sql)
@@ -109,7 +113,9 @@ class Db:
         return json[0]
 
   # When we want to return an array of json objects
-  def query_object_json(self, sql, params={}):
+  def query_object_json(self, sql, params=None):
+    if params is None:
+      params = {}
     self.print_sql('json', sql)
     self.print_params(params)
     wrapped_sql = self.query_wrap_object(sql)

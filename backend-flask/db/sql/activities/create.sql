@@ -11,6 +11,4 @@ VALUES (
   ),
   %(message)s,
   %(expires_at)s
-) RETURNING uuid, 
-            (SELECT display_name FROM public.users WHERE users.uuid = activities.user_uuid),
-            (SELECT handle FROM public.users WHERE users.uuid = activities.user_uuid)
+) RETURNING uuid;

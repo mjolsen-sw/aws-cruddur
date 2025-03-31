@@ -49,15 +49,7 @@ class CreateActivity:
         if data is None:
           model['errors'] += 'Failed to create activity'
         else:
-          inserted_uuid, display_name, handle = data
-          model['data'] = {
-            'uuid': inserted_uuid,
-            'display_name': display_name,
-            'handle':  handle,
-            'message': message,
-            'created_at': now.isoformat(),
-            'expires_at': expires_at
-          }
+          model['data'] = data
       return model
 
   @staticmethod
@@ -69,6 +61,9 @@ class CreateActivity:
         "message": message,
         "expires_at": expires_at
         }
-      data = db.query_commit(sql, params)
+      uuid = db.query_commit(sql, params)
+      sql = db.template("activities", "object")
+      params = { "uuid": uuid }
+      data = db.query_object_json(sql, params)
       span.set_attribute("activity.created.data", data)
       return data

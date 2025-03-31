@@ -45,11 +45,9 @@ class CreateActivity:
         }   
       else:
         expires_at = (now + ttl_offset).isoformat()
-        data = CreateActivity.create_activity(cognito_user_id, message, expires_at)
-        if data is None:
-          model['errors'] += 'Failed to create activity'
-        else:
-          model['data'] = data
+        uuid = CreateActivity.create_activity(cognito_user_id, message, expires_at)
+        data = CreateActivity.get_activity_info(uuid)
+        model['data'] = data
       return model
 
   @staticmethod
@@ -62,6 +60,12 @@ class CreateActivity:
         "expires_at": expires_at
         }
       uuid = db.query_commit(sql, params)
+      span.set_attribute("activity.created.uuid", uuid)
+      return uuid  
+  
+  @staticmethod
+  def get_activity_info(uuid):
+    with tracer.start_as_current_span("create-activity-get") as span:
       sql = db.template("activities", "object")
       params = { "uuid": uuid }
       data = db.query_object_json(sql, params)

@@ -15,7 +15,7 @@ class Db:
     self._pool = ConnectionPool(connection_url)
     
   def _close_pool(self):
-    if self.pool:
+    if self._pool:
       self._pool.close()
 
   @staticmethod
@@ -122,11 +122,22 @@ class Db:
     wrapped_sql = self.query_wrap_object(sql)
     with self._pool.connection() as conn:
       with conn.cursor() as cur:
-        cur.execute(wrapped_sql,params)
+        cur.execute(wrapped_sql, params)
         json = cur.fetchone()
         if json == None:
           return "{}"
         else:
           return json[0]
+  
+  def query_value(self,sql,params=None):
+    if params == None:
+      params = {}
+    self.print_sql('value', sql)
+    self.print_params(params)
+    with self._pool.connection() as conn:
+      with conn.cursor() as cur:
+        cur.execute(sql, params)
+        json = cur.fetchone()
+        return json[0]
 
 db = Db()

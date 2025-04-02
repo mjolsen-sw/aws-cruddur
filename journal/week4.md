@@ -1,4 +1,5 @@
 # Week 4 — Postgres and RDS
+`Note: I had postgres installed so I used port 2345 for the Docker container`
 ## PSQL
 ### Log into containerized database
 ```sh
@@ -38,7 +39,7 @@ We'll create a new SQL file called schema.sql and we'll place it in `backend-fla
 ```sh
 psql -h localhost -p 2345 -U postgres -d cruddur < db/schema.sql
 ```
-Using Windows Command Prompt (cmd):\
+Using Windows Command Prompt (cmd):
 ```sh
 psql -h localhost -U postgres -d cruddur < db/schema.sql
 ```
@@ -53,7 +54,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 export CONNECTION_URL="postgresql://postgres:password@localhost:2345/cruddur"
 ```
 ### Create our table
-Add table creation to 'schema.sql':
+Add table creation to `schema.sql`:
 ```sh
 CREATE TABLE public.users (
   uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -77,40 +78,8 @@ CREATE TABLE public.activities (
 );
 ```
 ```sh
-CREATE TABLE public.reply (
-  uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  reply_to_activity_uuid UUID,
-  display_name text,
-  handle text,
-  message text NOT NULL,
-  replies_count integer DEFAULT 0,
-  reposts_count integer DEFAULT 0,
-  likes_count integer DEFAULT 0,
-  created_at TIMESTAMP default current_timestamp NOT NULL
-);
-```
-```sh
-CREATE TABLE public.message (
-  uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  display_name text,
-  handle text,
-  message text NOT NULL,
-  created_at TIMESTAMP default current_timestamp NOT NULL
-);
-```
-```sh
-CREATE TABLE public.message_group (
-  uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  display_name text,
-  handle text
-);
-```
-```sh
 DROP TABLE IF EXISTS public.users;
 DROP TABLE IF EXISTS public.activities;
-DROP TABLE IF EXISTS public.reply;
-DROP TABLE IF EXISTS public.message;
-DROP TABLE IF EXISTS public.message_group;
 ```
 ### psycogp DB connection string with WSL
 To allow psycogp to connect to Docker container in WSL, use hostname **host.docker.internal**:
@@ -162,14 +131,14 @@ def lambda_handler(event, context):
 ```
 ##### Layers
 1. Package psycopg2 Layer by following directions below under `Creating psycopg2 Lambda Layer`
-2. Scroll down to `Layers` and click **Add a layer**
+2. Scroll down to `Layers` and click `Add a layer`
 3. Select `Custom Layers`
 4. Select the layer you uploaded and the version
 5. Click **Add**
 #### Configuration
-Under the lambda's **Configuration** section
+Under the lambda's `Configuration` section
 ##### Environment variables
-Click **Environment variables** on the left and set the following (best practice would be parameter store or secrets manager)
+Click `Environment variables` on the left and set the following (best practice would be parameter store or secrets manager)
 ```sh
 PG_HOSTNAME='db.endpoint.url'
 PG_PORT='2345'
@@ -178,19 +147,19 @@ PG_USERNAME='cruddur'
 PG_SECRET='password'
 ```
 ##### RDS databases
-1. Click **RDS databases** on left.
-2. Click **Connect to RDS database**
-3. Select "Use an existing database" and select the cruddur-db
+1. Click `RDS databases` on left.
+2. Click `Connect to RDS database`
+3. Select `Use an existing database` and select the cruddur-db
 4. Click **Create** and wait for it to configure
 #### Set the lambda to trigger after user confirmation
 1. Go to `Amazon Cognito`
 2. Click `User pools` on the left sidebar
 3. Select your cruddur user pool
 4. Under `Authentication`, click **Extensions**
-5. Use **Trigger type** "Sign-up"
-6. Select "Post confirmation trigger"
+5. Use `Trigger type` "Sign-up"
+6. Select `Post confirmation trigger`
 7. Assign the lambda you uploaded
-8. Click **Add Lambda trigger**
+8. Click `Add Lambda trigger`
 #### Creating psycopg2 Lambda Layer
 ##### Create new directory for the layer in `aws/lambdas/`
 ```sh

@@ -1,7 +1,7 @@
 #! /usr/bin/bash
--e # stop if it fails at any point
+set -e # stop if it fails at any point
 
-bin_path="$(realpath .)/bin"
+bin_path="$(realpath .)/bin/db"
 
 if [[ "$1" == "prod" ]]; then
     PROD_FLAG="prod"

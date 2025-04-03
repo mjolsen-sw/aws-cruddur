@@ -4,7 +4,7 @@ import React from "react";
 import DesktopNavigation from '../components/DesktopNavigation';
 import MessageGroupFeed from '../components/MessageGroupFeed';
 
-// Authenication
+// Authentication
 import { fetchAuthSession } from '@aws-amplify/auth';
 
 export default function MessageGroupsPage() {
@@ -19,7 +19,10 @@ export default function MessageGroupsPage() {
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`
       const res = await fetch(backend_url, {
-        method: "GET"
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
       let resJson = await res.json();
       if (res.status === 200) {

@@ -129,7 +129,7 @@ class Db:
         else:
           return json[0]
   
-  def query_value(self,sql,params=None):
+  def query_value(self, sql, params=None):
     if params == None:
       params = {}
     self.print_sql('value', sql)

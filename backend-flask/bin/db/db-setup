@@ -1,15 +1,10 @@
 #! /usr/bin/bash
 set -e # stop if it fails at any point
 
-bin_path="$(realpath .)/bin/db"
+bin_path="$(realpath .)/bin"
 
-if [[ "$1" == "prod" ]]; then
-    PROD_FLAG="prod"
-else
-    PROD_FLAG=""
-fi
-
-source "$bin_path/db-drop" $PROD_FLAG
-source "$bin_path/db-create" $PROD_FLAG
-source "$bin_path/db-schema-load" $PROD_FLAG
-source "$bin_path/db-seed" $PROD_FLAG
+source "$bin_path/db/db-drop"
+source "$bin_path/db/db-create"
+source "$bin_path/db/db-schema-load"
+source "$bin_path/db/db-seed"
+python3 "$bin_path/db/update-cognito-user-ids"

@@ -110,20 +110,20 @@ def init_rollbar():
 def auth_checked(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-      request.username = None
+      request.cognito_user_id = None
       auth_header = request.headers.get("Authorization")
 
       if auth_header:
         try:
           token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
           user_info = cognito_jwt_token.verify(token)
-          request.username = user_info["username"]  # Store user in request context
+          request.cognito_user_id = user_info["username"]
         except TokenVerifyError as e:
-          print(f"TokenVerifyError: {str(e)}")
+          print(f"TokenVerifyError: {e}")
         except FlaskAWSCognitoError as e:
-          print(f"FlaskAWSCognitoError: {str(e)}")
+          print(f"FlaskAWSCognitoError: {e}")
         except Exception as e:
-          print(f"Unexcepted exception: {str(e)}")
+          print(f"Unexcepted exception: {e}")
 
       else:
         print("Missing token")
@@ -133,10 +133,13 @@ def auth_checked(f):
     return decorated_function
 
 @app.route("/api/message_groups", methods=['GET'])
+@auth_checked
 def data_message_groups():
-  user_handle  = 'andrewbrown'
-  model = MessageGroups.run(user_handle=user_handle)
-  if model['errors'] is not None:
+  cognito_user_id = request.cognito_user_id
+  if cognito_user_id is None:
+    return { 'error': 'Not logged in' }, 401
+  model = MessageGroups.run(cognito_user_id=cognito_user_id)
+  if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200
@@ -168,10 +171,7 @@ def data_create_message():
 @app.route("/api/activities/home", methods=['GET'])
 @auth_checked
 def data_home():
-  if request.username:
-    print("username:", request.username)
-  
-  data = HomeActivities.run(request.username)
+  data = HomeActivities.run(request.cognito_user_id)
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
@@ -200,7 +200,7 @@ def data_search():
 @cross_origin()
 @auth_checked
 def data_activities():
-  cognito_user_id = request.username
+  cognito_user_id = request.cognito_user_id
   if cognito_user_id is None:
     return { 'error': 'Not logged in' }, 401
   message = request.json['message']

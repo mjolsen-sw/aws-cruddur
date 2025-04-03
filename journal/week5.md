@@ -1,7 +1,7 @@
 # Week 5 — DynamoDB and Serverless Caching
 ## DynamoDB Python and Bash Scripts
 ```sh
-./bin/ddb/schem-load
+./backend-flask/bin/ddb/*
 ```
 ## The Boundaries of DynamoDB
 - When you write a query you have provide a Primary Key (equality) eg. pk = 'GRP#1e057ec3-a40a-4133-b170-92f56a762c45'
@@ -23,8 +23,8 @@ SELECT
   messages.created_at -- sk
 FROM messages
 WHERE
-  messages.pk = "MSG#{{message_group_uuid}}" -- pk
-ORDER BY messages.created_at DESC
+  messages.message_group_uuid  = {{message_group_uuid}} -- pk
+ORDER BY messages.created_at DESC -- sk
 ```
 > message_group_uuid comes from Pattern B
 ### Pattern B (list of conversations)
@@ -42,7 +42,7 @@ SELECT
   message_groups.last_message_at
 FROM message_groups
 WHERE
-  message_groups.pk = "GRP#{{user_uuid}}" --pk
+  message_groups.user_uuid = {{user_uuid}} --pk
 ORDER BY message_groups.last_message_at DESC
 ```
 > We need a Global Secondary Index (GSI)
@@ -63,7 +63,8 @@ VALUES (
 ```
 ### Pattern D (update a message_group for the last message)
 When a user creates a message we need to update the conversation
-to display the last message information for the conversation
+to display the last message information for the conversation. Keep
+in mind this requires deleting and recreating instead of updating.
 ```sql
 UPDATE message_groups
 SET 

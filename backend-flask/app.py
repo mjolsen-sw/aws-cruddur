@@ -67,7 +67,7 @@ from flask import got_request_exception
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
-origins = [frontend, backend, "172.20.176.1"]
+origins = [frontend, backend]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
@@ -144,26 +144,45 @@ def data_message_groups():
   else:
     return model['data'], 200
 
-@app.route("/api/messages/@<string:handle>", methods=['GET'])
-def data_messages(handle):
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.args.get('user_reciever_handle')
+@app.route("/api/messages/<string:message_group_id>", methods=['GET'])
+@auth_checked
+def data_messages(message_group_id):
+  cognito_user_id = request.cognito_user_id
+  # if cognito_user_id is None:
+  #   return { 'error': 'Not logged in' }, 401
 
-  model = Messages.run(user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
+  model = Messages.run(
+    cognito_user_id=cognito_user_id,
+    message_group_id=message_group_id
+  )
+
+  if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200
 
 @app.route("/api/messages", methods=['POST','OPTIONS'])
 @cross_origin()
+@auth_checked
 def data_create_message():
-  user_sender_handle = 'andrewbrown'
-  user_receiver_handle = request.json['user_receiver_handle']
+  cognito_user_id = request.cognito_user_id
+  if cognito_user_id is None:
+    return { 'error': 'Not logged in' }, 401
   message = request.json['message']
 
-  model = CreateMessage.run(message=message,user_sender_handle=user_sender_handle,user_receiver_handle=user_receiver_handle)
-  if model['errors'] is not None:
+  user_receiver_handle = request.json.get('handle', None)
+  message_group_uuid = request.json.get('message_group_uuid', None)
+
+  mode = 'create' if message_group_uuid == None else 'update'
+
+  model = CreateMessage.run(
+    mode=mode,
+    cognito_user_id=cognito_user_id,
+    message_group_uuid=message_group_uuid,
+    message=message,
+    user_receiver_handle=user_receiver_handle
+  )
+  if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200

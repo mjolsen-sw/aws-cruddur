@@ -1,27 +1,28 @@
-from datetime import datetime, timedelta, timezone
+from opentelemetry import trace
+
+from lib.db import db
+from lib.ddb import ddb
+
+tracer = trace.get_tracer("user.messages")
+
 class Messages:
-  def run(user_sender_handle, user_receiver_handle):
-    model = {
-      'errors': None,
-      'data': None
-    }
+  def run(cognito_user_id, message_group_id):
+    with tracer.start_as_current_span("user-messages-run") as span:
+      model = {
+        'errors': [],
+        'data': None
+      }
 
-    now = datetime.now(timezone.utc).astimezone()
+      # sql = db.template('users','uuid_from_cognito_user_id')
+      # my_user_uuid = db.query_value(sql, {'cognito_user_id': cognito_user_id})
+      # TODO: validate cognito_user_id or my_user_uuid is valid for these messages
 
-    results = [
-      {
-        'uuid': '4e81c06a-db0f-4281-b4cc-98208537772a' ,
-        'display_name': 'Andrew Brown',
-        'handle':  'andrewbrown',
-        'message': 'Cloud is fun!',
-        'created_at': now.isoformat()
-      },
-      {
-        'uuid': '66e12864-8c26-4c3a-9658-95a10f8fea67',
-        'display_name': 'Andrew Brown',
-        'handle':  'andrewbrown',
-        'message': 'This platform is great!',
-        'created_at': now.isoformat()
-    }]
-    model['data'] = results
-    return model
+      results = ddb.list_messages(message_group_id)
+
+      # span.set_attribute("cognito_user_id", cognito_user_id)
+      # span.set_attribute("my_user_uuid", my_user_uuid)
+      span.set_attribute("message_group_id", message_group_id)
+      span.set_attribute("app.results", len(results))
+
+      model['data'] = results
+      return model

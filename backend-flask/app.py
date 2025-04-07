@@ -23,6 +23,7 @@ from services.message_groups import *
 from services.messages import *
 from services.create_message import *
 from services.show_activity import *
+from services.users_short import *
 
 # # aws x-ray
 # from aws_xray_sdk.core import xray_recorder
@@ -147,12 +148,8 @@ def data_message_groups():
 @app.route("/api/messages/<string:message_group_id>", methods=['GET'])
 @auth_checked
 def data_messages(message_group_id):
-  cognito_user_id = request.cognito_user_id
-  # if cognito_user_id is None:
-  #   return { 'error': 'Not logged in' }, 401
-
   model = Messages.run(
-    cognito_user_id=cognito_user_id,
+    cognito_user_id=request.cognito_user_id,
     message_group_id=message_group_id
   )
 
@@ -168,8 +165,8 @@ def data_create_message():
   cognito_user_id = request.cognito_user_id
   if cognito_user_id is None:
     return { 'error': 'Not logged in' }, 401
-  message = request.json['message']
 
+  message = request.json['message']
   user_receiver_handle = request.json.get('handle', None)
   message_group_uuid = request.json.get('message_group_uuid', None)
 
@@ -182,10 +179,16 @@ def data_create_message():
     message=message,
     user_receiver_handle=user_receiver_handle
   )
+  
   if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200
+
+@app.route("/api/users/@<string:handle>/short")
+def data_short(handle):
+  data = UsersShort.run(handle)
+  return data, 200
 
 @app.route("/api/activities/home", methods=['GET'])
 @auth_checked

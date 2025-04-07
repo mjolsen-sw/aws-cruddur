@@ -83,7 +83,7 @@ Windows:
 ```sh
 [Environment]::SetEnvironmentVariable("AWS_REGION", "us-west-1", "User")
 ```
-Add dependencyt to `requirements.txt` and install:
+Add dependency to `requirements.txt` and install:
 ```sh
 aws-xray-sdk
 ```

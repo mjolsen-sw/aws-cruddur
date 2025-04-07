@@ -77,3 +77,44 @@ WHERE
   message_groups.uuid = {{message_group_uuid}}
   AND message_groups.user_uuid = {{user_uuid}}
 ```
+## DynamoDB Stream trigger to update message groups
+### Create production table and enable stream
+1. Create production table:
+'''sh
+./backend-flash/bin/ddb/schema-load prod
+'''
+2. Open `cruddur-messages` DynamoDB table in AWS console
+3. Navigate to `Exports and streams` tab
+4. Under `DynamoDB stream details`, click **Turn on**
+5. Select `New image` and click **Turn on stream**
+### Create VPC endpoint for DynamoDB service in the VPC
+1. Go to `VPC` service and select `Endpoints` on the sidebar
+2. Click **Create endpoint** button on the upper right
+3. Name the endpoint under `Endpoint settings` (eg. cruddur-ddb-endpoint)
+4. Under `Services`, filter for **dynamodb** and select the `Gateway` **Type**
+5. Select the cruddur VPC under `Network settings`
+6. Select the route table under `Route tables`
+7. Leave the `Policy` section as is
+8. Click **Create endpoint** at bottom right
+### Create Python lambda function in the VPC
+#### Create Lambda
+1. Name function (eg. cruddur-messaging-stream) and select `Runtime` (eg. Python 3.10)
+2. Select `Change default execution role`
+3. Select `Create a new role with basic Lambda permissions` (this will be changed later)
+4. Under `Additional Configurations` select `Enable VPC` and select the VPC
+5. Under `Subnets` select your subnets
+6. Use the default security group
+7. Click **Create function** at the bottom right
+#### The Function
+Use the code from `./aws/lambdas/cruddur-messaging-stream.py`
+#### Update Role
+1. Select the `Configuration` tab
+2. Select `Permissions` on the sidebar
+3. Select the role under `Role name` to go to `IAM > Roles` (eg. 
+cruddur-messaging-stream-role-kplzdgtb)
+4. Attach an inline policy in the file `./aws/policies/cruddur-message-stream-policy.json`
+5. Attach `AWSLambdaInvocation-DynamoDB`
+#### Add function to be triggered by DynamoDB Stream
+1. Go to your DynamboDB table (eg. `DynamoDB > Tables > cruddur-messages`)
+2. Scroll down to `Trigger` and click **Create trigger**
+3. Select your function and create

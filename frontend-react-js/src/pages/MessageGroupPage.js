@@ -8,7 +8,7 @@ import MessagesFeed from '../components/MessageFeed';
 import MessagesForm from '../components/MessageForm';
 
 // Authenication
-import { fetchAuthSession } from '@aws-amplify/auth';
+import checkAuth from '../lib/CheckAuth';
 
 export default function MessageGroupPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -60,29 +60,12 @@ export default function MessageGroupPage() {
     }
   };
 
-  const checkAuth = async () => {
-    fetchAuthSession()
-      .then(session => {
-        if (session.tokens) {
-          setUser({
-            display_name: session.tokens.idToken.payload.name,
-            handle: session.tokens.idToken.payload.preferred_username
-          });
-          setAccessToken(session.tokens?.accessToken?.toString());
-        }
-        else {
-          setAccessToken("");
-        }
-      })
-      .catch(err => console.log(err));
-  };
-
   React.useEffect(() => {
     //prevents double call
     if (authFetchedRef.current) return;
     authFetchedRef.current = true;
 
-    checkAuth();
+    checkAuth(setUser, setAccessToken);
   }, [])
 
   React.useEffect(() => {

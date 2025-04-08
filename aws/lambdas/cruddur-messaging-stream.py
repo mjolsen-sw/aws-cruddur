@@ -9,14 +9,14 @@ dynamodb = boto3.resource(
 )
 
 def lambda_handler(event, context):
+  eventName = event['Records'][0]['eventName']
+  if (eventName == 'REMOVE'):
+    print("skip REMOVE event")
+    return
+
   pk = event['Records'][0]['dynamodb']['Keys']['pk']['S']
   sk = event['Records'][0]['dynamodb']['Keys']['sk']['S']
   if pk.startswith('MSG#'):
-    eventName = event['Records'][0]['eventName']
-    if (eventName == 'REMOVE'):
-      print("skip REMOVE event")
-      return
-
     group_uuid = pk.replace("MSG#", "")
     message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
     print("GROUP ===>", group_uuid, message)

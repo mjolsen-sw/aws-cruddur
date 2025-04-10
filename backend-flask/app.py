@@ -133,6 +133,10 @@ def auth_checked(f):
 
     return decorated_function
 
+@app.route('/api/health-check')
+def health_check():
+  return {'success': True}, 200
+
 @app.route("/api/message_groups", methods=['GET'])
 @auth_checked
 def data_message_groups():

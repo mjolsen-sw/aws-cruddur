@@ -131,8 +131,11 @@ echo $ECR_FRONTEND_REACT_URL
 ```
 3. Build Image
 ```sh
+npm run build
+```
+```sh
 docker build \
---build-arg REACT_APP_BACKEND_URL="http://127.0.0.1:4567" \
+--build-arg REACT_APP_BACKEND_URL="http://cruddur-alb-1387477663.us-west-1.elb.amazonaws.com:4567" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="${AWS_REGION}" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="${AWS_REGION}" \
 --build-arg REACT_APP_AWS_USER_POOLS_ID="${AWS_COGNITO_USER_POOL_ID}" \

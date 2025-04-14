@@ -63,11 +63,11 @@
         },
         {
           "name": "FRONTEND_URL",
-          "value": "*"
+          "value": "https://app.cruddur.molsen.dev"
         },
         {
           "name": "BACKEND_URL",
-          "value": "*"
+          "value": "https://api.cruddur.molsen.dev"
         },
         {
           "name": "AWS_DEFAULT_REGION",

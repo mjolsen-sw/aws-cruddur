@@ -1,0 +1,5 @@
+button:hover {
+  background-color: var(--field-border-focus);
+  box-shadow: 0 4px 12px var(--field-border);
+  transform: scale(1.03);
+}

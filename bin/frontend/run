@@ -10,9 +10,3 @@ docker run --rm \
   --network cruddur-net \
   --publish 4567:4567 \
   -it frontend-react-js-prod
-
-  # --env REACT_APP_BACKEND_URL="http://127.0.0.1:4567"
-  # --env REACT_APP_AWS_PROJECT_REGION="${AWS_REGION}"
-  # --env REACT_APP_AWS_COGNITO_REGION="${AWS_REGION}"
-  # --env REACT_APP_AWS_USER_POOLS_ID="${AWS_COGNITO_USER_POOL_ID}"
-  # --env REACT_APP_CLIENT_ID="${AWS_COGNITO_USER_POOL_CLIENT_ID}"

@@ -1,13 +1,11 @@
-from opentelemetry import trace
+from aws_xray_sdk.core import xray_recorder
 
 from lib.db import db
 from lib.ddb import ddb
 
-tracer = trace.get_tracer("message.groups")
-
 class MessageGroups:
   def run(cognito_user_id):
-    with tracer.start_as_current_span("message-groups-run") as span:
+    with xray_recorder.in_segment('message_groups') as segment:
       model = {
         'errors': [],
         'data': None
@@ -20,9 +18,9 @@ class MessageGroups:
 
       results = ddb.list_message_groups(my_user_uuid)
       print("list_message_groups:", results)
-      span.set_attribute("cognito_user_id", cognito_user_id)
-      span.set_attribute("user_uuid", my_user_uuid)
-      span.set_attribute("app.results", len(results))
+      segment.put_annotation("cognito_user_id", cognito_user_id)
+      segment.put_annotation("user_uuid", my_user_uuid)
+      segment.put_annotation("app.results", len(results))
 
       model['data'] = results
       return model

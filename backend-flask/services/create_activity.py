@@ -1,21 +1,19 @@
+from aws_xray_sdk.core import xray_recorder
 from datetime import datetime, timedelta, timezone
-from opentelemetry import trace
 
 from lib.db import db
-
-tracer = trace.get_tracer("create.activity")
 
 class CreateActivity:
   @staticmethod
   def run(message, cognito_user_id, ttl):
-    with tracer.start_as_current_span("create-activity-run") as span:
+    with xray_recorder.in_segment('create_activity_run') as segment:
       model = {
         'errors': [],
         'data': None
       }
 
       now = datetime.now(timezone.utc).astimezone()
-      span.set_attribute("app.now", now.isoformat())
+      segment.put_annotation("app.now", now.isoformat())
 
       if (ttl == '30-days'):
         ttl_offset = timedelta(days=30) 
@@ -52,7 +50,7 @@ class CreateActivity:
 
   @staticmethod
   def create_activity(cognito_user_id, message, expires_at):
-    with tracer.start_as_current_span("create-activity-create") as span:
+    with xray_recorder.in_segment('create_activity_create') as segment:
       sql = db.template("activities", "create")
       params = { 
         "cognito_user_id": cognito_user_id,
@@ -60,14 +58,14 @@ class CreateActivity:
         "expires_at": expires_at
         }
       uuid = db.query_commit(sql, params)
-      span.set_attribute("activity.created.uuid", uuid)
+      segment.put_annotation("activity.created.uuid", uuid)
       return uuid  
   
   @staticmethod
   def get_activity_info(uuid):
-    with tracer.start_as_current_span("create-activity-get") as span:
+    with xray_recorder.in_segment('create_activity_get') as segment:
       sql = db.template("activities", "object")
       params = { "uuid": uuid }
       data = db.query_object_json(sql, params)
-      span.set_attribute("activity.created.data", data)
+      segment.put_annotation("activity.created.data", data)
       return data

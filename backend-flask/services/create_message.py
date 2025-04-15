@@ -1,15 +1,13 @@
 import uuid
 
-from opentelemetry import trace
+from aws_xray_sdk.core import xray_recorder
 
 from lib.db import db
 from lib.ddb import ddb
 
-tracer = trace.get_tracer('create.message')
-
 class CreateMessage:
   def run(mode, cognito_user_id, message_group_uuid, message, user_receiver_handle):
-    with tracer.start_as_current_span('create-messages-run') as span:
+    with xray_recorder.in_segment('create_message') as segment:
       model = {
         'errors': [],
         'data': None
@@ -46,11 +44,6 @@ class CreateMessage:
         my_user    = next((item for item in users if item['kind'] == 'sender'), None)
         other_user = next((item for item in users if item['kind'] == 'recv')  , None)
 
-        print('USERS=[my-user]==')
-        print(my_user)
-        print('USERS=[other-user]==')
-        print(other_user)
-
         if mode == 'create':
           data = ddb.create_message_group(
             message=message,
@@ -71,6 +64,6 @@ class CreateMessage:
           )
 
         model['data'] = data
-        span.set_attribute("message.create.data", data)
+        segment.put_annotation("message.create.data", data)
 
       return model

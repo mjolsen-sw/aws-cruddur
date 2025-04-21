@@ -20,11 +20,11 @@
         "s3SchemaVersion": "1.0",
         "configurationId": "testConfigRule",
         "bucket": {
-          "name": "assets.cruddur.molsen.dev",
+          "name": "cruddur-molsen-uploaded-avatars",
           "ownerIdentity": {
             "principalId": "EXAMPLE"
           },
-          "arn": "arn:aws:s3:::assets.cruddur.molsen.dev"
+          "arn": "arn:aws:s3:::cruddur-molsen-uploaded-avatars"
         },
         "object": {
           "key": "avatars/original/data.jpg",

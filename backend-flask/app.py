@@ -72,7 +72,8 @@ origins = [frontend, backend]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  headers=['Content-Type', 'Authorization'], 
+  supports_credentials=True,
+  allow_headers=['Content-Type', 'Authorization'], 
   expose_headers='Authorization',
   methods="OPTIONS,GET,HEAD,POST"
 )

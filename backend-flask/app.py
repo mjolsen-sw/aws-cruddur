@@ -190,6 +190,26 @@ def data_create_message():
   else:
     return model['data'], 200
 
+@app.route("/api/profile/update", methods=['POST','OPTIONS'])
+@cross_origin()
+def data_update_profile():
+  cognito_user_id = request.cognito_user_id
+  if cognito_user_id is None:
+    return { 'error': 'Not logged in' }, 401
+
+  bio          = request.json.get('bio',None)
+  display_name = request.json.get('display_name',None)
+  
+  UpdateProfile.run(
+    cognito_user_id=cognito_user_id,
+    bio=bio,
+    display_name=display_name
+  )
+  if model['errors'] is not None:
+    return model['errors'], 422
+  else:
+    return model['data'], 200
+
 @app.route("/api/users/@<string:handle>/short")
 def data_short(handle):
   data = UsersShort.run(handle)
@@ -207,9 +227,12 @@ def data_notifications():
   return data, 200
 
 @app.route("/api/activities/@<string:handle>", methods=['GET'])
+@auth_checked
 def data_handle(handle):
+  if request.cognito_user_id is None:
+    return { 'error': 'Not logged in' }, 401
   model = UserActivities.run(handle)
-  if model['errors'] is not None:
+  if len(model['errors']) > 0:
     return model['errors'], 422
   else:
     return model['data'], 200

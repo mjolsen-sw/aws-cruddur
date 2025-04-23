@@ -1,14 +1,12 @@
 import './SignupPage.css';
 import React from "react";
-import { ReactComponent as Logo } from '../components/svg/logo.svg';
+import { ReactComponent as Logo } from 'components/svg/logo.svg';
 import { Link } from "react-router-dom";
 
-// Authenication
 import { signUp } from '@aws-amplify/auth';
 
 export default function SignupPage() {
-
-  // Username is Eamil
+  // Username is Email
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [username, setUsername] = React.useState('');
@@ -17,7 +15,7 @@ export default function SignupPage() {
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    setCognitoErrors('')
+    setCognitoErrors('');
     try {
       const { user } = await signUp({
         username: email,
@@ -34,12 +32,12 @@ export default function SignupPage() {
         }
       });
       console.log(user);
-      window.location.href = `/confirm?email=${email}`
+      window.location.href = `/confirm?email=${email}`;
     } catch (error) {
       console.log(error);
-      setCognitoErrors(error.message)
+      setCognitoErrors(error.message);
     }
-    return false
+    return false;
   }
 
   const name_onchange = (event) => {

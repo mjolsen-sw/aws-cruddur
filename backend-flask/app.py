@@ -24,6 +24,7 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 from services.users_short import *
+from services.update_profile import *
 
 # # aws x-ray
 # from aws_xray_sdk.core import xray_recorder
@@ -192,15 +193,17 @@ def data_create_message():
 
 @app.route("/api/profile/update", methods=['POST','OPTIONS'])
 @cross_origin()
+@auth_checked
 def data_update_profile():
   cognito_user_id = request.cognito_user_id
+  print('cognito_user_id:', cognito_user_id)
   if cognito_user_id is None:
     return { 'error': 'Not logged in' }, 401
 
   bio          = request.json.get('bio',None)
   display_name = request.json.get('display_name',None)
   
-  UpdateProfile.run(
+  model = UpdateProfile.run(
     cognito_user_id=cognito_user_id,
     bio=bio,
     display_name=display_name

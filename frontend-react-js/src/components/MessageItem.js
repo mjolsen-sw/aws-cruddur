@@ -1,6 +1,6 @@
 import './MessageItem.css';
 import { Link } from "react-router-dom";
-import { format_datetime, message_time_ago } from '../lib/DateTimeFormats';
+import { format_datetime, message_time_ago } from 'lib/DateTimeFormats';
 
 export default function MessageItem(props) {
 

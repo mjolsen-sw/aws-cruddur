@@ -7,7 +7,6 @@ export default function ProfileForm(props) {
   const [displayName, setDisplayName] = React.useState(0);
 
   React.useEffect(() => {
-    console.log('useEffects', props)
     setBio(props.profile.bio);
     setDisplayName(props.profile.display_name);
   }, [props, props.profile]);
@@ -31,9 +30,9 @@ export default function ProfileForm(props) {
       let data = await res.json();
       if (res.status === 200) {
         console.log("data:", data);
-        setBio(null)
-        setDisplayName(null)
-        props.setPopped(false)
+        setBio("");
+        setDisplayName("");
+        props.setPopped(false);
       } else {
         console.log(res)
       }
@@ -51,7 +50,6 @@ export default function ProfileForm(props) {
   }
 
   const close = (event) => {
-    console.log('close', event.target)
     if (event.target.classList.contains("profile_popup")) {
       props.setPopped(false)
     }

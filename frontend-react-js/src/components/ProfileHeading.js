@@ -1,5 +1,5 @@
 import './ProfileHeading.css';
-import EditProfileButton from '../components/EditProfileButton';
+import EditProfileButton from 'components/EditProfileButton';
 
 export default function ProfileHeading(props) {
   const backgroundImage = 'url("https://assets.cruddur.molsen.dev/banners/banner.jpg")';
@@ -21,8 +21,9 @@ export default function ProfileHeading(props) {
           <div className="handle">@{props.profile.handle}</div>
           <div className="cruds_count">{props.profile.cruds_count} Cruds</div>
         </div>
-        <EditProfileButton setPopped={props.setPopped} />
+        {(props.user && props.profile && props.user.handle === props.profile.handle) && <EditProfileButton setPopped={props.setPopped} />}
       </div>
+      <div className="bio">{props.profile.bio}</div>
 
     </div>
   );

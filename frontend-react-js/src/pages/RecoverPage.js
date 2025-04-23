@@ -1,11 +1,11 @@
 import './RecoverPage.css';
 import React from "react";
-import { ReactComponent as Logo } from '../components/svg/logo.svg';
+import { ReactComponent as Logo } from 'components/svg/logo.svg';
 import { Link } from "react-router-dom";
 import { resetPassword, confirmResetPassword } from '@aws-amplify/auth';
 
 export default function RecoverPage() {
-  // Username is Eamil
+  // Username is Email
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [passwordAgain, setPasswordAgain] = React.useState('');
@@ -15,7 +15,7 @@ export default function RecoverPage() {
 
   const onsubmit_send_code = async (event) => {
     event.preventDefault();
-    setCognitoErrors('')
+    setCognitoErrors('');
     resetPassword({ username })
       .then((data) => setFormState('confirm_code'))
       .catch((err) => setCognitoErrors(err.message));
@@ -24,7 +24,7 @@ export default function RecoverPage() {
 
   const onsubmit_confirm_code = async (event) => {
     event.preventDefault();
-    setCognitoErrors('')
+    setCognitoErrors('');
     if (password === passwordAgain) {
       confirmResetPassword({
         username,
@@ -34,9 +34,9 @@ export default function RecoverPage() {
         .then((data) => setFormState('success'))
         .catch((err) => setCognitoErrors(err.message));
     } else {
-      setCognitoErrors('Passwords do not match')
+      setCognitoErrors('Passwords do not match');
     }
-    return false
+    return false;
   }
 
   const username_onchange = (event) => {
@@ -135,13 +135,13 @@ export default function RecoverPage() {
 
   let form;
   if (formState === 'send_code') {
-    form = send_code()
+    form = send_code();
   }
   else if (formState === 'confirm_code') {
-    form = confirm_code()
+    form = confirm_code();
   }
   else if (formState === 'success') {
-    form = success()
+    form = success();
   }
 
   return (

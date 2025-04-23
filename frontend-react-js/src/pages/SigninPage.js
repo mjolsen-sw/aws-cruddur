@@ -1,9 +1,8 @@
 import './SigninPage.css';
 import React from "react";
-import { ReactComponent as Logo } from '../components/svg/logo.svg';
+import { ReactComponent as Logo } from 'components/svg/logo.svg';
 import { Link } from "react-router-dom";
 
-// Authenication
 import { signIn } from '@aws-amplify/auth';
 
 export default function SigninPage() {
@@ -13,24 +12,24 @@ export default function SigninPage() {
   const [cognitoErrors, setCognitoErrors] = React.useState('');
 
   const onsubmit = async (event) => {
-    setCognitoErrors('')
+    setCognitoErrors('');
     event.preventDefault();
     try {
       const { nextStep } = await signIn({
         username: email,
         password: password
-      })
+      });
 
       if (nextStep.signInStep === "DONE") {
-        window.location.href = "/"
+        window.location.href = "/";
       }
       else if (nextStep.signInStep === "CONFIRM_SIGN_UP") {
-        window.location.href = "/confirm"
+        window.location.href = "/confirm";
       }
     } catch (error) {
-      setCognitoErrors(error.message)
+      setCognitoErrors(error.message);
     }
-    return false
+    return false;
   }
 
   const email_onchange = (event) => {

@@ -1,9 +1,8 @@
 import './ConfirmationPage.css';
 import React from "react";
 import { useSearchParams } from 'react-router-dom';
-import { ReactComponent as Logo } from '../components/svg/logo.svg';
+import { ReactComponent as Logo } from 'components/svg/logo.svg';
 
-// Authenication
 import { confirmSignUp, resendSignUpCode } from '@aws-amplify/auth';
 
 export default function ConfirmationPage() {

@@ -1,5 +1,5 @@
 import './SuggestedUserSection.css';
-import SuggestedUserItem from '../components/SuggestedUserItem';
+import SuggestedUserItem from 'components/SuggestedUserItem';
 
 export default function SuggestedUsersSection(props) {
   return (

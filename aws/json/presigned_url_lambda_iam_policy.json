@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ssm:GetParameter",
+      "Resource": "arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/CONNECTION_URL"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::cruddur-molsen-uploaded-avatars/*"
+    }
+  ]
+}

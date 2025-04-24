@@ -1,1 +1,3 @@
 lambdas/psycopg2-layer/python/*
+lambdas/upload-avatar/jose-layer/python/*
+venv

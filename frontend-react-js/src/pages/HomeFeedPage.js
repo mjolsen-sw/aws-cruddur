@@ -7,7 +7,7 @@ import ActivityFeed from 'components/ActivityFeed';
 import ActivityForm from 'components/ActivityForm';
 import ReplyForm from 'components/ReplyForm';
 
-import checkAuth from 'lib/CheckAuth';
+import { checkAuth, getAccessToken } from 'lib/CheckAuth';
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -15,12 +15,11 @@ export default function HomeFeedPage() {
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
-  const [accessToken, setAccessToken] = React.useState(null);
-  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
     try {
+      const accessToken = await getAccessToken();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
       let init = { method: "GET" };
       if (accessToken)
@@ -38,19 +37,12 @@ export default function HomeFeedPage() {
   };
 
   React.useEffect(() => {
-    if (authFetchedRef.current) return;
-    authFetchedRef.current = true;
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
-    checkAuth(setUser, setAccessToken);
+    loadData();
+    checkAuth(setUser);
   }, []);
-
-  React.useEffect(() => {
-    if (accessToken != null) {
-      if (dataFetchedRef.current) return;
-      dataFetchedRef.current = true;
-      loadData();
-    }
-  }, [accessToken]);
 
   return (
     <article>
@@ -60,7 +52,6 @@ export default function HomeFeedPage() {
           popped={popped}
           setPopped={setPopped}
           setActivities={setActivities}
-          accessToken={accessToken}
         />
         <ReplyForm
           activity={replyActivity}

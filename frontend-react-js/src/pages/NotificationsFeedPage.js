@@ -7,7 +7,7 @@ import ActivityFeed from 'components/ActivityFeed';
 import ActivityForm from 'components/ActivityForm';
 import ReplyForm from 'components/ReplyForm';
 
-import checkAuth from 'lib/CheckAuth';
+import { checkAuth, getAccessToken } from 'lib/CheckAuth';
 
 export default function NotificationsFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -15,8 +15,6 @@ export default function NotificationsFeedPage() {
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
-  const [accessToken, setAccessToken] = React.useState(null);
-  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
@@ -38,19 +36,12 @@ export default function NotificationsFeedPage() {
 
   React.useEffect(() => {
     //prevents double call
-    if (authFetchedRef.current) return;
-    authFetchedRef.current = true;
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
-    checkAuth(setUser, setAccessToken);
+    loadData();
+    checkAuth(setUser);
   }, [])
-
-  React.useEffect(() => {
-    if (accessToken) {
-      if (dataFetchedRef.current) return;
-      dataFetchedRef.current = true;
-      loadData();
-    }
-  }, [accessToken]);
 
   return (
     <article>

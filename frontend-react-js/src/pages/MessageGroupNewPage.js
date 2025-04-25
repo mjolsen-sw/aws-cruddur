@@ -7,7 +7,7 @@ import MessageGroupFeed from 'components/MessageGroupFeed';
 import MessagesFeed from 'components/MessageFeed';
 import MessagesForm from 'components/MessageForm';
 
-import checkAuth from 'lib/CheckAuth';
+import { checkAuth, getAccessToken } from 'lib/CheckAuth';
 
 export default function MessageGroupPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -15,8 +15,6 @@ export default function MessageGroupPage() {
   const [popped, setPopped] = React.useState([]);
   const [user, setUser] = React.useState(null);
   const [otherUser, setOtherUser] = React.useState(null);
-  const [accessToken, setAccessToken] = React.useState(null);
-  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
   const params = useParams();
 
@@ -40,6 +38,7 @@ export default function MessageGroupPage() {
 
   const loadMessageGroupsData = async () => {
     try {
+      const accessToken = await getAccessToken();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`
       const res = await fetch(backend_url, {
         method: "GET",
@@ -60,20 +59,13 @@ export default function MessageGroupPage() {
 
   React.useEffect(() => {
     //prevents double call
-    if (authFetchedRef.current) return;
-    authFetchedRef.current = true;
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
-    checkAuth(setUser, setAccessToken);
-  }, [])
-
-  React.useEffect(() => {
-    if (accessToken) {
-      if (dataFetchedRef.current) return;
-      dataFetchedRef.current = true;
-      loadUserShortData();
-      loadMessageGroupsData();
-    }
-  }, [accessToken]);
+    loadUserShortData();
+    loadMessageGroupsData();
+    checkAuth(setUser);
+  }, []);
 
   return (
     <article>
@@ -83,7 +75,7 @@ export default function MessageGroupPage() {
       </section>
       <div className='content messages'>
         <MessagesFeed messages={messages} />
-        <MessagesForm setMessages={setMessages} accessToken={accessToken} />
+        <MessagesForm setMessages={setMessages} />
       </div>
     </article>
   );

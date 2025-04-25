@@ -4,18 +4,17 @@ import React from "react";
 import DesktopNavigation from 'components/DesktopNavigation';
 import MessageGroupFeed from 'components/MessageGroupFeed';
 
-import checkAuth from 'lib/CheckAuth';
+import { checkAuth, getAccessToken } from 'lib/CheckAuth';
 
 export default function MessageGroupsPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [user, setUser] = React.useState(null);
-  const [accessToken, setAccessToken] = React.useState(null);
-  const authFetchedRef = React.useRef(false);
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
     try {
+      const accessToken = await getAccessToken();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/message_groups`
       const res = await fetch(backend_url, {
         method: "GET",
@@ -36,19 +35,12 @@ export default function MessageGroupsPage() {
 
   React.useEffect(() => {
     //prevents double call
-    if (authFetchedRef.current) return;
-    authFetchedRef.current = true;
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
-    checkAuth(setUser, setAccessToken);
+    checkAuth(setUser);
+    loadData();
   }, [])
-
-  React.useEffect(() => {
-    if (accessToken) {
-      if (dataFetchedRef.current) return;
-      dataFetchedRef.current = true;
-      loadData();
-    }
-  }, [accessToken]);
 
   return (
     <article>

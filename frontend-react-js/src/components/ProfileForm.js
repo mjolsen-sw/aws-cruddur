@@ -1,6 +1,8 @@
 import './ProfileForm.css';
 import React from "react";
 import process from 'process';
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getAccessToken } from 'lib/CheckAuth';
 
 export default function ProfileForm(props) {
   const [bio, setBio] = React.useState(0);
@@ -11,14 +13,19 @@ export default function ProfileForm(props) {
     setDisplayName(props.profile.display_name);
   }, [props, props.profile]);
 
+  const s3upload = async (event) => {
+
+  }
+
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
+      const accessToken = await getAccessToken();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/profile/update`
       const res = await fetch(backend_url, {
         method: "POST",
         headers: {
-          'Authorization': `Bearer ${props.accessToken}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
@@ -69,6 +76,9 @@ export default function ProfileForm(props) {
             </div>
           </div>
           <div className="popup_content">
+            <div className="upload" onClick={s3upload}>
+              Upload Avatar
+            </div>
             <div className="field display_name">
               <label>Display Name</label>
               <input

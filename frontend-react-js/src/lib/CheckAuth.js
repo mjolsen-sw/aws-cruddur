@@ -1,20 +1,29 @@
 import { fetchAuthSession } from '@aws-amplify/auth';
 
-const checkAuth = async (setUser, setAccessToken) => {
-  fetchAuthSession()
-    .then(session => {
-      if (session.tokens) {
-        setUser({
-          display_name: session.tokens.idToken.payload.name,
-          handle: session.tokens.idToken.payload.preferred_username
-        });
-        setAccessToken(session.tokens?.accessToken?.toString());
-      }
-      else {
-        setAccessToken("");
-      }
-    })
-    .catch(err => console.log(err));
+const checkAuth = async (setUser) => {
+  try {
+    const session = await fetchAuthSession();
+    if (session.tokens) {
+      setUser({
+        display_name: session.tokens.idToken.payload.name,
+        handle: session.tokens.idToken.payload.preferred_username
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
-export default checkAuth;
+const getAccessToken = async () => {
+  try {
+    const session = await fetchAuthSession();
+    if (session.tokens) {
+      return session.tokens.accessToken.toString();
+    }
+  } catch (err) {
+    console.log(err)
+  }
+
+}
+
+export { checkAuth, getAccessToken };

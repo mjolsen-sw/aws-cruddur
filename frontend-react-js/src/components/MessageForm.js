@@ -2,6 +2,7 @@ import './MessageForm.css';
 import React from "react";
 import process from 'process';
 import { useParams } from 'react-router-dom';
+import { getAccessToken } from 'lib/CheckAuth';
 
 export default function ActivityForm(props) {
   const [count, setCount] = React.useState(0);
@@ -17,6 +18,7 @@ export default function ActivityForm(props) {
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
+      const accessToken = await getAccessToken();
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages`;
       console.log('onsubmit payload', message);
       let json = { message: message };
@@ -30,7 +32,7 @@ export default function ActivityForm(props) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${props.accessToken}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify(json)
       });

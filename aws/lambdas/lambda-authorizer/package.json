@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.787.0",
     "aws-jwt-verify": "^5.0.0"

@@ -6,10 +6,17 @@ const ssm = new SSMClient({});
 let verifier; // We'll initialize this lazily after fetching SSM params
 
 export const handler = async (event) => {
-  const token = event.headers.Authorization;
+  const rawToken = event.headers.authorization || event.headers.Authorization;
+
+  if (!rawToken || !rawToken.startsWith("Bearer ")) {
+    console.error("Missing or malformed Authorization header:", rawToken);
+    return generateDeny("user", event.routeArn);
+  }
+
+  const token = rawToken.split(" ")[1];
 
   if (!token) {
-    return generateDeny("user", event.methodArn);
+    return generateDeny("user", event.routeArn);
   }
 
   try {
@@ -19,7 +26,6 @@ export const handler = async (event) => {
         getSSMParam("/cruddur/cognito/USER_POOL_ID"),
         getSSMParam("/cruddur/cognito/CLIENT_ID"),
       ]);
-
       verifier = CognitoJwtVerifier.create({
         userPoolId,
         clientId,
@@ -27,13 +33,13 @@ export const handler = async (event) => {
       });
     }
 
-    const payload = await verifier.verify(token.replace("Bearer ", ""));
+    const payload = await verifier.verify(token);
     const principalId = payload.sub;
 
-    return generateAllow(principalId, event.methodArn, payload);
+    return generateAllow(principalId, event.routeArn, payload);
   } catch (err) {
     console.error("Token verification failed:", err);
-    return generateDeny("user", event.methodArn);
+    return generateDeny("user", event.routeArn);
   }
 };
 

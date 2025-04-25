@@ -2,30 +2,16 @@ import boto3
 import json
 import os
 import psycopg2
-import requests
-from jose import jwt, JWTError
 
 s3_client = boto3.client('s3')
 ssm_client = boto3.client('ssm')
 
 # Required environment variables
 BUCKET_NAME = os.environ['UPLOADS_BUCKET_NAME']
-COGNITO_USERPOOL_ID = os.environ['AWS_COGNITO_USER_POOL_ID']
-COGNITO_REGION = os.environ['AWS_REGION']
 SSM_CONN_PARAM = "/cruddur/backend-flask/CONNECTION_URL"
 
-# JWKS URL
-JWKS_URL = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USERPOOL_ID}/.well-known/jwks.json"
-
-# Cache JWKS
-_jwks = None
+# Cache connection url
 _connection_url = None
-
-def get_jwks():
-  global _jwks
-  if _jwks is None:
-    _jwks = requests.get(JWKS_URL).json()
-  return _jwks
 
 def get_connection_url():
     global _connection_url
@@ -53,21 +39,7 @@ def get_user_handle(cognito_sub):
 
 def lambda_handler(event, context):
   try:
-    # Extract the token from the Authorization header
-    auth_header = event['headers'].get('Authorization', '')
-    if not auth_header.startswith('Bearer '):
-      return {
-        "statusCode": 401,
-        "body": json.dumps({"error": "Missing or invalid Authorization header"})
-      }
-
-    token = auth_header.split(' ')[1]
-
-    # Decode and verify the token
-    jwks = get_jwks()
-    claims = jwt.decode(token, jwks, algorithms=['RS256'], audience=None, issuer=f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USERPOOL_ID}")
-
-    user_id = claims.get('sub')
+    user_id = event['requestContext']['authorizer']['lambda']['sub']
     if not user_id:
       raise ValueError("Invalid token: no 'sub' claim found")
     
@@ -99,12 +71,6 @@ def lambda_handler(event, context):
         "upload_url": presigned_url,
         "file_key": filename
       })
-    }
-  except JWTError as e:
-    print(f"JWT decode error: {e}")
-    return {
-      "statusCode": 401,
-      "body": json.dumps({"error": "Invalid token"})
     }
   except Exception as e:
     print(f"Error generating presigned URL: {e}")

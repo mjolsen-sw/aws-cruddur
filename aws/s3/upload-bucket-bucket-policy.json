@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Id": "Policy1745763031552",
+  "Statement": [
+    {
+      "Sid": "Stmt1745763022428",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::009160064216:role/service-role/CruddurAvatarUploadUrl-role-z7s278vn"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::cruddur-molsen-uploaded-avatars/*"
+    }
+  ]
+}

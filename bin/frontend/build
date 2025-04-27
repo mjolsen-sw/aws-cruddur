@@ -7,6 +7,8 @@ FRONTEND_REACT_JS_PATH="$PROJECT_PATH/frontend-react-js"
 
 docker build \
 --build-arg REACT_APP_BACKEND_URL="https://api.cruddur.molsen.dev" \
+--build-arg REACT_APP_FRONTEND_URL="https://app.cruddur.molsen.dev" \
+--build-arg REACT_APP_API_GATEWAY_ENDPOINT="https://636syv5b0j.execute-api.us-west-1.amazonaws.com" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_REGION" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_REGION" \
 --build-arg REACT_APP_AWS_USER_POOLS_ID="$AWS_COGNITO_USER_POOL_ID" \

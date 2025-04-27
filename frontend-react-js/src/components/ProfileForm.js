@@ -1,20 +1,64 @@
 import './ProfileForm.css';
 import React from "react";
 import process from 'process';
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getAccessToken } from 'lib/CheckAuth';
 
 export default function ProfileForm(props) {
-  const [bio, setBio] = React.useState(0);
-  const [displayName, setDisplayName] = React.useState(0);
+  const [bio, setBio] = React.useState("");
+  const [displayName, setDisplayName] = React.useState("");
 
   React.useEffect(() => {
-    setBio(props.profile.bio);
-    setDisplayName(props.profile.display_name);
+    setBio(props.profile.bio || "");
+    setDisplayName(props.profile.display_name || "");
   }, [props, props.profile]);
 
-  const s3upload = async (event) => {
+  const s3uploadkey = async () => {
+    try {
+      const accessToken = await getAccessToken();
+      const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT}/avatars/key_upload`
+      const res = await fetch(gateway_url, {
+        method: "POST",
+        headers: {
+          'Origin': `${process.env.REACT_APP_FRONTEND_URL}`,
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      let data = await res.json();
+      if (res.status === 200) {
+        return data;
+      } else {
+        console.log(res);
+        return null;
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
+  const s3upload = async (event) => {
+    const file = event.target.files[0];
+    //const preview_image_url = URL.createObjectURL(file);
+    try {
+      const presigned_url = await s3uploadkey();
+      const backend_url = presigned_url["upload_url"];
+      const res = await fetch(backend_url, {
+        method: "PUT",
+        headers: {
+          'Content-Type': file.type || 'image/jpeg'
+        },
+        body: file
+      });
+
+      if (res.ok) {
+        console.log("uploaded avatar");
+      } else {
+        console.log(res);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   const onsubmit = async (event) => {
@@ -34,9 +78,8 @@ export default function ProfileForm(props) {
           display_name: displayName
         }),
       });
-      let data = await res.json();
-      if (res.status === 200) {
-        console.log("data:", data);
+
+      if (res.ok) {
         setBio("");
         setDisplayName("");
         props.setPopped(false);
@@ -76,9 +119,7 @@ export default function ProfileForm(props) {
             </div>
           </div>
           <div className="popup_content">
-            <div className="upload" onClick={s3upload}>
-              Upload Avatar
-            </div>
+            <input type="file" name="avatarupload" onChange={s3upload} accept="image/jpeg" />
             <div className="field display_name">
               <label>Display Name</label>
               <input

@@ -18,6 +18,7 @@ export default function UserFeedPage() {
   const [poppedProfile, setPoppedProfile] = React.useState([]);
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
+  const userFetchedRef = React.useRef(false);
 
   const params = useParams();
 
@@ -44,11 +45,20 @@ export default function UserFeedPage() {
   };
 
   React.useEffect(() => {
+    if (!user) return;
+
     //prevents double call
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
 
     loadData();
+  }, [user])
+
+  React.useEffect(() => {
+    //prevents double call
+    if (userFetchedRef.current) return;
+    userFetchedRef.current = true;
+
     checkAuth(setUser);
   }, [])
 

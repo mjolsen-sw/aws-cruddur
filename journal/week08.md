@@ -88,6 +88,8 @@ It needs access to SSM to retrieve the Cognito user pool id and client id.
 ### Lambda - S3 Upload URL Generator
 Add `aws/lambda/upload-avatar` as a function.
 It will need to be deployed in the VPC to be able to connect to the database.
+#### Lambda Layer
+Use the psycopg2 lambda layer that was generated before.
 #### Permissions
 - SSM /cruddur/backend-flask/CONNECTION_URL to be able to retrieve handles from db.
 The following EC2 permissions are required to run the lambda in the VPC:

@@ -1,5 +1,6 @@
 import './ProfileHeading.css';
 import EditProfileButton from 'components/EditProfileButton';
+import ProfileAvatar from 'components/ProfileAvatar';
 
 export default function ProfileHeading(props) {
   const backgroundImage = 'url("https://assets.cruddur.molsen.dev/banners/banner.jpg")';
@@ -8,12 +9,11 @@ export default function ProfileHeading(props) {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
   };
+
   return (
     <div className='activity_feed_heading profile_heading'>
       <div className="banner" style={styles} >
-        <div className="avatar">
-          <img src="https://assets.cruddur.molsen.dev/avatars/data.jpg"></img>
-        </div>
+        <ProfileAvatar user={props.profile} />
       </div>
       <div className="info">
         <div className='id'>

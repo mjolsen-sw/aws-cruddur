@@ -2,7 +2,8 @@ import './ProfileInfo.css';
 import { ReactComponent as ElipsesIcon } from './svg/elipses.svg';
 import React from "react";
 
-// Authenication
+import ProfileAvatar from 'components/ProfileAvatar'
+
 import { signOut } from '@aws-amplify/auth';
 
 export default function ProfileInfo(props) {
@@ -35,7 +36,7 @@ export default function ProfileInfo(props) {
         <button onClick={sign_out}>Sign Out</button>
       </div>
       <div className="profile-info" onClick={click_pop}>
-        <div className="profile-avatar"></div>
+        <ProfileAvatar user={props.user} />
         <div className="profile-desc">
           <div className="profile-display-name">{props.user.display_name || "My Name"}</div>
           <div className="profile-username">@{props.user.handle || "handle"}</div>

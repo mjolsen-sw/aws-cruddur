@@ -1,5 +1,8 @@
 # Week 9 — CI/CD with CodePipeline, CodeBuild and CodeDeploy
 ## Backend
+Added `backend-flask/buildspec.yml` to bake image for CI/CD pipeline.
+### CodePipeline Service Role Permissions
+CodePipeline will need the additional permissions from `aws/codepipeline/service-role-codebuild-permissions.json` in order to run the Bake Image project in the pipeline.
 ### Bake Image
 In CodeBuild, we need to build a project to make the flask docker container.
 #### Build Project

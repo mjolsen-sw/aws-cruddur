@@ -1,0 +1,14 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"codebuild:StartBuild",
+				"codebuild:BatchGetBuilds",
+				"codebuild:BatchGetProjects"
+			],
+			"Resource": "arn:aws:codebuild:us-west-1:009160064216:project/cruddur-backend-flask-bake-image"
+		}
+	]
+}

@@ -40,4 +40,4 @@ aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.js
 
 ### Logical Architectural Design of Application
 - [Link to Cruddur Logical Diagram](https://lucid.app/lucidchart/bc1bc027-2bf5-43e0-ad09-948391356f60/edit?viewport_loc=-316%2C-40%2C2992%2C1473%2C0_0&invitationId=inv_6f7aaa06-f08d-41c1-8883-26557e762317)
-![Cruddur Logical Diagram](https://github.com/mjolsen-sw/aws-cruddur/blob/main/journal/assets/Cruddur%20Logical%20Diagram.png)
+![Cruddur Logical Diagram](assets/Cruddur_Logical_Diagram.png)

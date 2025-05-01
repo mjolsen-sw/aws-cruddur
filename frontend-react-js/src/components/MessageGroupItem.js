@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { format_datetime, message_time_ago } from 'lib/DateTimeFormats';
 import { useParams } from 'react-router-dom';
 
+import ProfileAvatar from 'components/ProfileAvatar';
+
 export default function MessageGroupItem(props) {
   const params = useParams();
 
@@ -16,7 +18,7 @@ export default function MessageGroupItem(props) {
 
   return (
     <Link className={classes()} to={`/messages/` + props.message_group.uuid}>
-      <div className='message_group_avatar'></div>
+      <ProfileAvatar user={props.message_group} />
       <div className='message_content'>
         <div className='message_group_meta'>
           <div className='message_group_identity'>

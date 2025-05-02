@@ -23,6 +23,7 @@ Parameters:
     Description: This is our base layer of networking components (e.g. VPC, subnets)
 
 Resources:
+  # Security Groups
   AlbSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -33,35 +34,20 @@ Resources:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
       SecurityGroupIngress:
-        - IpProtocol: https
+        - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
           CidrIp: '0.0.0.0/0'
           Description: INTERNET HTTPS
-        - IpProtocol: http
+        - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
           CidrIp: '0.0.0.0/0'
           Description: INTERNET HTTP
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
-          FromPort: 
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}BackendPort
-          ToPort:
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}BackendPort
-          Description: Backend HTTP
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !GetAtt FrontendServiceSg.GroupId
-          FromPort: 
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}FrontendPort
-          ToPort:
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}FrontendPort
-          Description: Frontend HTTP
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound (default for ALB)
   BackendServiceSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -82,20 +68,9 @@ Resources:
               !Sub ${NetworkingStack}BackendPort
           Description: ALB HTTP
       SecurityGroupEgress:
-        - IpProtocol: https
-          SourceSecurityGroupId: !GetAtt SsmEndpointSg.GroupId
-          FromPort: 443
-          ToPort: 443
-          Description: SSM Enpoint HTTPS
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !GetAtt DbSg.GroupId
-          FromPort: 
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}DbPort
-          ToPort:
-            Fn::ImportValue:
-              !Sub ${NetworkingStack}DbPort
-          Description: DB TCP
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound
   DbSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -134,6 +109,10 @@ Resources:
             Fn::ImportValue:
               !Sub ${NetworkingStack}FrontendPort
           Description: ALB HTTP
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound
   LambdaAvatarUrlSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -143,8 +122,8 @@ Resources:
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
-      SecurityGroupEngress:
-        - IpProtocol: -1  # -1 means all protocols
+      SecurityGroupEgress:
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
           Description: Allow all outbound traffic
   SsmEndpointSg:
@@ -157,12 +136,12 @@ Resources:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
       SecurityGroupIngress:
-        - IpProtocol: https
+        - IpProtocol: tcp
           SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
           FromPort: 443
           ToPort: 443
           Description: Backend HTTPS
-        - IpProtocol: https
+        - IpProtocol: tcp
           SourceSecurityGroupId: !GetAtt LambdaAvatarUrlSg.GroupId
           FromPort: 443
           ToPort: 443
@@ -172,7 +151,7 @@ Outputs:
   AlbSecurityGroupId:
     Value: !GetAtt AlbSg.GroupId
     Export:
-      Name: !Sub "${AWS::StackName}AlbSecurityGroupId"
+      Name: !Sub "${AWS::StackName}AlbSg"
   BackendServiceSecurityGroupId:
     Value: !GetAtt BackendServiceSg.GroupId
     Export:

@@ -14,6 +14,12 @@ Description: |
     - 2 Private Subnets numbered 1 and 2
 
 Parameters:
+  # Configured Parameters
+  BackendUrl:
+    Type: String
+  FrontendUrl:
+    Type: String
+  # cluster parameters
   Az1:
     Type: AWS::EC2::AvailabilityZone::Name
     Default: us-west-1b
@@ -169,6 +175,10 @@ Outputs:
     Value: !Ref BackendPort
     Export:
       Name: !Sub "${AWS::StackName}BackendPort"
+  BackendUrlVal:
+    Value: !Ref BackendUrl
+    Export:
+      Name: !Sub "${AWS::StackName}BackendUrl"
   DbPortVal:
     Value: !Ref DbPort
     Export:
@@ -177,6 +187,10 @@ Outputs:
     Value: !Ref FrontendPort
     Export:
       Name: !Sub "${AWS::StackName}FrontendPort"
+  FrontendUrlVal:
+    Value: !Ref FrontendUrl
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendUrl"
   PublicSubnetIds:
     Value: !Join
       - ","

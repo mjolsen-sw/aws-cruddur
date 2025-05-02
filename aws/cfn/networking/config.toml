@@ -2,3 +2,7 @@
 bucket = 'cfn-artifacts-cruddur-molsen'
 region = 'us-west-1'
 stack_name = 'CrdNet'
+
+[parameters]
+BackendUrl = 'api.cruddur.molsen.dev'
+FrontendUrl = 'app.cruddur.molsen.dev'

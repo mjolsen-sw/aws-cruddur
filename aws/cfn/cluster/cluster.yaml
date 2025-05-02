@@ -39,10 +39,10 @@ Parameters:
   FrontendHealthCheckTimeoutSeconds:
     Type: Number
     Default: 5
-  FrontendHealthyThreshholdCount:
+  FrontendHealthyThresholdCount:
     Type: Number
     Default: 2
-  FrontendUnhealthThresholdCount:
+  FrontendUnhealthyThresholdCount:
     Type: Number
     Default: 2
   # Backend ------
@@ -156,9 +156,9 @@ Resources:
           RedirectConfig:
             Protocol: "HTTPS"
             Port: 443
-            Host: "#{host}"
-            Path: "/#{path}"
-            Query: "#{query}"
+            # Host: "#{host}"
+            # Path: "/#{path}"
+            # Query: "#{query}"
             StatusCode: "HTTP_301"
   ApiALBListenerRule:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-listenerrule.html
@@ -168,7 +168,8 @@ Resources:
         - Field: host-header
           HostHeaderConfig: 
             Values: 
-              - api.cruddur.molsen.dev
+              - Fn::ImportValue:
+                  !Sub ${NetworkingStack}BackendUrl
       Actions: 
         - Type: forward
           TargetGroupArn:  !Ref BackendTG
@@ -182,7 +183,8 @@ Resources:
         - Field: host-header
           HostHeaderConfig: 
             Values: 
-              - app.cruddur.molsen.dev
+              - Fn::ImportValue:
+                  !Sub ${NetworkingStack}FrontendUrl
       Actions: 
         - Type: forward
           TargetGroupArn:  !Ref FrontendTG

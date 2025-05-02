@@ -21,6 +21,15 @@ Parameters:
     Type: AWS::EC2::AvailabilityZone::Name
     Default: us-west-1c
   # us-west-1 doesn't have a 3rd Az so I'm only using 2 instead of 3
+  BackendPort:
+    Type: Number
+    Default: 4567
+  DbPort:
+    Type: Number
+    Default: 2345
+  FrontendPort:
+    Type: Number
+    Default: 3000
   SubnetCidrBlocks:
     Description: "Comma-delimited list of CIDR blocks for our private public subnets"
     Type: CommaDelimitedList
@@ -156,6 +165,18 @@ Outputs:
         - !Ref Az2
     Export:
       Name: !Sub "${AWS::StackName}AvailabilityZones"
+  BackendPortVal:
+    Value: !Ref BackendPort
+    Export:
+      Name: !Sub "${AWS::StackName}BackendPort"
+  DbPortVal:
+    Value: !Ref DbPort
+    Export:
+      Name: !Sub "${AWS::StackName}DbPort"
+  FrontendPortVal:
+    Value: !Ref FrontendPort
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendPort"
   PublicSubnetIds:
     Value: !Join
       - ","

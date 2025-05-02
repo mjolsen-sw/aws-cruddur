@@ -17,25 +17,22 @@ Description: |
   - Frontend Target Group
 
 Parameters:
+  # Configured Parameters
   NetworkingStack:
     Type: String
     Description: This is our base layer of networking components (e.g. VPC, subnets)
-    Default: CrdNet
+  SecurityStack:
+    Type: String
+    Description: This is our layer of security components(e.g. IAM, SGs)
   CertificateArn:
     Type: String
   # Frontend ------
-  FrontendPort:
-    Type: Number
-    Default: 3000
   FrontendHealthCheckIntervalSeconds:
     Type: Number
     Default: 15
   FrontendHealthCheckPath:
     Type: String
     Default: "/"
-  FrontendHealthCheckPort:
-    Type: String
-    Default: "80"
   FrontendHealthCheckProtocol:
     Type: String
     Default: HTTP
@@ -49,18 +46,12 @@ Parameters:
     Type: Number
     Default: 2
   # Backend ------
-  BackendPort:
-    Type: Number
-    Default: 4567
   BackendHealthCheckIntervalSeconds:
     Type: Number
     Default: 15
   BackendHealthCheckPath:
     Type: String
     Default: "/api/health-check"
-  BackendHealthCheckPort:
-    Type: String
-    Default: "80"
   BackendHealthCheckProtocol:
     Type: String
     Default: HTTP
@@ -100,7 +91,8 @@ Resources:
       IpAddressType: ipv4
       Scheme: internet-facing
       SecurityGroups:
-        - !GetAtt ALBSG.GroupId
+        - Fn::ImportValue:
+            !Sub ${SecurityStack}AlbSg
       Subnets:
         Fn::Split:
           - ","
@@ -196,52 +188,20 @@ Resources:
           TargetGroupArn:  !Ref FrontendTG
       ListenerArn: !Ref HTTPSListener
       Priority: 2
-  ALBSG:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub "${AWS::StackName}AlbSG"
-      GroupDescription: Public Facing SG for our Cruddur ALB
-      VpcId:
-        Fn::ImportValue:
-          !Sub ${NetworkingStack}VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: '0.0.0.0/0'
-          Description: INTERNET HTTPS
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: '0.0.0.0/0'
-          Description: INTERNET HTTP
-  # We have to create this SG before the service so we can pass it to database SG
-  ServiceSG:
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub "${AWS::StackName}ServSG"
-      GroupDescription: Security for Fargate Services for Cruddur
-      VpcId:
-        Fn::ImportValue:
-          !Sub ${NetworkingStack}VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !GetAtt ALBSG.GroupId
-          FromPort: !Ref BackendPort
-          ToPort: !Ref BackendPort
-          Description: ALB HTTP
   BackendTG:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Port: !Ref BackendPort
+      Port:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}BackendPort
       HealthCheckEnabled: true
       HealthCheckProtocol: !Ref BackendHealthCheckProtocol
       HealthCheckIntervalSeconds: !Ref BackendHealthCheckIntervalSeconds
       HealthCheckPath: !Ref BackendHealthCheckPath
-      HealthCheckPort: !Ref BackendPort
+      HealthCheckPort:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}BackendPort
       HealthCheckTimeoutSeconds: !Ref BackendHealthCheckTimeoutSeconds
       HealthyThresholdCount: !Ref BackendHealthyThresholdCount
       UnhealthyThresholdCount: !Ref BackendUnhealthyThresholdCount
@@ -264,12 +224,16 @@ Resources:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticloadbalancingv2-targetgroup.html
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Port: !Ref FrontendPort
+      Port:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}FrontendPort
       HealthCheckEnabled: true
       HealthCheckProtocol: !Ref FrontendHealthCheckProtocol
       HealthCheckIntervalSeconds: !Ref FrontendHealthCheckIntervalSeconds
       HealthCheckPath: !Ref FrontendHealthCheckPath
-      HealthCheckPort: !Ref FrontendPort
+      HealthCheckPort:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}FrontendPort
       HealthCheckTimeoutSeconds: !Ref FrontendHealthCheckTimeoutSeconds
       HealthyThresholdCount: !Ref FrontendHealthyThresholdCount
       UnhealthyThresholdCount: !Ref FrontendUnhealthyThresholdCount
@@ -277,7 +241,7 @@ Resources:
       Matcher: 
         HttpCode: 200
       Protocol: HTTP
-      ProtocolVersion: HTTP2
+      ProtocolVersion: HTTP1
       TargetType: ip
       TargetGroupAttributes: 
         - Key: deregistration_delay.timeout_seconds
@@ -294,14 +258,6 @@ Outputs:
     Value: !Ref FargateCluster
     Export:
       Name: !Sub "${AWS::StackName}ClusterName"
-  ServiceSecurityGroupId:
-    Value: !GetAtt ServiceSG.GroupId
-    Export:
-      Name: !Sub "${AWS::StackName}ServiceSecurityGroupId"
-  ALBSecurityGroupId:
-    Value: !GetAtt ALBSG.GroupId
-    Export:
-      Name: !Sub "${AWS::StackName}ALBSecurityGroupId"
   FrontendTGArn:
     Value: !Ref FrontendTG
     Export:

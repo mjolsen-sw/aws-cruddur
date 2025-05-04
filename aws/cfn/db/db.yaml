@@ -9,7 +9,10 @@ Parameters:
   # Imported parameters
   NetworkingStack:
     Type: String
-    Description: This is our base layer of networking components eg. VPC, Subnets
+    Description: This is our base layer of networking components, e.g. VPC, Subnets
+  SecurityStack:
+    Type: String
+    Description: This is our security layer, e.g. IAM and Security Groups
   ClusterStack:
     Type: String
     Description: This is our FargateCluster

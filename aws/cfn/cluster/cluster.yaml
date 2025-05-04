@@ -7,7 +7,6 @@ Description: |
     - ipv4 only
     - internet facing
     - certificate attached from Amazon Certification Manager (ACM)
-  - ALB Security Group
   - HTTPS Listener
     - send app. subdomain and naked domain to frontend Target Group
     - send api. subdomain to backend Target Group
@@ -15,6 +14,7 @@ Description: |
     - redirects to HTTPS Listener
   - Backend Target Group
   - Frontend Target Group
+  - SSM Interface Endpoint for Parameter Store
 
 Parameters:
   # Configured Parameters
@@ -254,6 +254,64 @@ Resources:
       Tags:
         - Key: target-group-name
           Value: frontend
+  DdbVpcEndpoint:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpcendpoint.html
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.dynamodb
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      VpcEndpointType: Gateway
+      RouteTableIds: 
+        - Fn::ImportValue:
+            !Sub ${NetworkingStack}RouteTableId
+  # EcrApiVpcEndpoint:
+  #   Type: AWS::EC2::VPCEndpoint
+  #   Properties:
+  #     VpcId:
+  #       Fn::ImportValue:
+  #         !Sub ${NetworkingStack}VpcId
+  #     ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.api
+  #     VpcEndpointType: Interface
+  #     SubnetIds:
+  #       !Split 
+  #         - ","
+  #         - Fn::ImportValue:
+  #             !Sub ${NetworkingStack}PrivateSubnetIds
+  #     SecurityGroupIds:
+  #       - Fn::ImportValue:
+  #           !Sub ${SecurityStack}EcrEndpointSg
+  #     PrivateDnsEnabled: true
+  # EcrDkrVpcEndpoint:
+  #   Type: AWS::EC2::VPCEndpoint
+  #   Properties:
+  #     VpcId: !Ref VpcId
+  #     ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.dkr
+  #     VpcEndpointType: Interface
+  #     SubnetIds: !Ref PrivateSubnetIds
+  #     SecurityGroupIds:
+  #       - Fn::ImportValue:
+  #           !Sub ${SecurityStack}EcrEndpointSg
+  #     PrivateDnsEnabled: true
+  SsmVpcEndpoint:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpcendpoint.html
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ssm
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      VpcEndpointType: Interface
+      SubnetIds:
+        !Split 
+          - ","
+          - Fn::ImportValue:
+              !Sub ${NetworkingStack}PrivateSubnetIds
+      SecurityGroupIds:
+        - Fn::ImportValue:
+            !Sub ${SecurityStack}SsmEndpointSg
+      PrivateDnsEnabled: true
 
 Outputs:
   ClusterName:
@@ -268,3 +326,11 @@ Outputs:
     Value: !Ref BackendTG
     Export:
       Name: !Sub "${AWS::StackName}BackendTGArn"
+  DdbVpcEndpointId:
+    Value: !Ref DdbVpcEndpoint
+    Export:
+      Name: !Sub "${AWS::StackName}DdbVpcEndpoint"
+  SsmEndpointId:
+    Value: !Ref "SsmVpcEndpoint"
+    Export:
+      Name: !Sub "${AWS::StackName}SsmVpcEndpoint"

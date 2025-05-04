@@ -1,0 +1,9 @@
+[deploy]
+bucket = 'cfn-artifacts-cruddur-molsen'
+region = 'us-west-1'
+stack_name = 'CrdSrv'
+
+[parameters]
+NetworkingStack = 'CrdNet'
+SecurityStack = 'CrdSec'
+ClusterStack = 'CrdCluster'

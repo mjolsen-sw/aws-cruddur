@@ -205,6 +205,10 @@ Outputs:
         - !Ref SubnetPriv2
     Export:
       Name: !Sub "${AWS::StackName}PrivateSubnetIds"
+  RouteTableId:
+    Value: !Ref RouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}RouteTableId"
   SubnetCidrBlocks:
     Value: !Join [",", !Ref SubnetCidrBlocks]
     Export:

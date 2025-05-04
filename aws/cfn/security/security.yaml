@@ -1,20 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Description: |
-  The networking and cluster configuration to support fargate containers
-  - ECS Fargate Cluster
-  - Application Load Balanacer (ALB)
-    - ipv4 only
-    - internet facing
-    - certificate attached from Amazon Certification Manager (ACM)
+  The security configurations for the stack, IAM and Security Groups.
   - ALB Security Group
-  - HTTPS Listener
-    - send app. subdomain and naked domain to frontend Target Group
-    - send api. subdomain to backend Target Group
-  - HTTP Listener
-    - redirects to HTTPS Listener
-  - Backend Target Group
-  - Frontend Target Group
+  - Backend and Frontend Service Security Groups
+  - Database Security Group
+  - Presigned S3 URL Lambda Security Group
+  - SSM Interface Endpoint Security Group
 
 Parameters:
   # Configured Parameters
@@ -76,7 +68,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub "${AWS::StackName}DbSg"
-      GroupDescription: Security for Fargate Services for Cruddur
+      GroupDescription: Security for Postgres RDS DB for Cruddur
       VpcId:
         Fn::ImportValue:
           !Sub ${NetworkingStack}VpcId
@@ -90,6 +82,21 @@ Resources:
             Fn::ImportValue:
               !Sub ${NetworkingStack}DbPort
           Description: DB TCP
+  # EcrEndpointSg:
+  #   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupName: !Sub "${AWS::StackName}EcrEndpointSg"
+  #     GroupDescription: Security for ECR Interface Endpoints
+  #     VpcId:
+  #       Fn::ImportValue:
+  #         !Sub ${NetworkingStack}VpcId
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
+  #         FromPort: 443
+  #         ToPort: 443
+  #         Description: Backend HTTPS
   FrontendServiceSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -146,8 +153,66 @@ Resources:
           FromPort: 443
           ToPort: 443
           Description: LambdaAvatarUrl HTTPS
+  # Roles
+  BackendExecutionRole:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurBackendServiceExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'cruddur-backend-execution-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: 'SSMParameterStoreGetParameters'
+                Effect: 'Allow'
+                Action:
+                  - 'ssm:GetParameters'
+                  - 'ssm:GetParameter'
+                Resource:
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/backend-flask/*'
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/cognito/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+  BackendTaskRole:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurServiceTaskRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'cruddur-task-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: 'VisualEditor0'
+                Effect: 'Allow'
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 
 Outputs:
+  # Security Groups
   AlbSecurityGroupId:
     Value: !GetAtt AlbSg.GroupId
     Export:
@@ -156,14 +221,18 @@ Outputs:
     Value: !GetAtt BackendServiceSg.GroupId
     Export:
       Name: !Sub "${AWS::StackName}BackendServiceSg"
-  FrontendServiceSecurityGroupId:
-    Value: !GetAtt FrontendServiceSg.GroupId
-    Export:
-      Name: !Sub "${AWS::StackName}FrontendServiceSg"
   DbSecurityGroupId:
     Value: !GetAtt DbSg.GroupId
     Export:
       Name: !Sub "${AWS::StackName}DbSg"
+  # EcrEndpointSgId:
+  #   Value: !GetAtt EcrEndpointSg.GroupId
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}EcrEndpointSg"
+  FrontendServiceSecurityGroupId:
+    Value: !GetAtt FrontendServiceSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendServiceSg"
   LambdaAvatarUrlSecurityGroupId:
     Value: !GetAtt LambdaAvatarUrlSg.GroupId
     Export:
@@ -172,3 +241,12 @@ Outputs:
     Value: !GetAtt SsmEndpointSg.GroupId
     Export:
       Name: !Sub "${AWS::StackName}SsmEndpointSg"
+  # Roles
+  BackendExecutionRoleArn:
+    Value: !GetAtt BackendExecutionRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}BackendExecutionRoleArn"
+  BackendTaskRoleArn:
+    Value: !GetAtt BackendTaskRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}BackendTaskRoleArn"

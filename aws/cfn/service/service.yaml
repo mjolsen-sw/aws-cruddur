@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  Task Definition
+  Fargate Service
+  Execution Role
+  Task Role
+
+Parameters:
+  # Imported Parameters
+  NetworkingStack:
+    Type: String
+    Description: This is our base layer of networking components, e.g. VPC, Subnets
+  SecurityStack:
+    Type: String
+    Description: This is our security layer, e.g. IAM, Security Groups
+  ClusterStack:
+    Type: String
+    Description: This is our cluster layer, e.g. ECS Cluster, ALB
+  # shared configs
+  SecretsCognitoUserPoolId:
+    Type: String
+    Default: arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/cognito/USER_POOL_ID
+  SecretsCognitoUserPoolClientId:
+    Type: String
+    Default: arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/cognito/CLIENT_ID
+  ServiceCpu:
+    Type: String
+    Default: '256'
+  ServiceMemory:
+    Type: String
+    Default: '512'
+  # backend ------
+  BackendServiceName:
+    Type: String
+    Default: backend-flask
+  BackendContainerName:
+    Type: String
+    Default: backend-flask
+  BackendTaskFamily:
+    Type: String
+    Default: backend-flask
+  BackendEcrImage:
+    Type: String
+    Default: '009160064216.dkr.ecr.us-west-1.amazonaws.com/backend-flask'
+  EnvOtelServiceName:
+    Type: String
+    Default: backend-flask
+  EnvOtelExporterOtlpEndpoint:
+    Type: String
+    Default: https://api.honeycomb.io
+  SecretsAWSAccessKeyId:
+    Type: String
+    Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/AWS_ACCESS_KEY_ID'
+  SecretsSecretAccessKey:
+    Type: String
+    Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY'
+  SecretsConnectionUrl:
+    Type: String
+    Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/CONNECTION_URL'
+  SecretsRollbarAccessToken:
+    Type: String
+    Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN'
+  SecretsOtelExporterOltpHeaders:
+    Type: String
+    Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS'
+  # frontend ------
+  # FrontendServiceName:
+  #   Type: String
+  #   Default: frontend-react-js
+  # FrontendContainerName:
+  #   Type: String
+  #   Default: frontend-react-js
+  # FrontendTaskFamily:
+  #   Type: String
+  #   Default: frontend-react-js
+  # FrontendEcrImage:
+  #   Type: String
+  #   Default: '009160064216.dkr.ecr.us-west-1.amazonaws.com/frontend-react-js'
+
+Resources:
+  BackendFargateService:
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-service.html
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub "${ClusterStack}ClusterName"
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      EnableExecuteCommand: true
+      HealthCheckGracePeriodSeconds: 0
+      LaunchType: FARGATE
+      LoadBalancers:
+        - TargetGroupArn:
+            Fn::ImportValue:
+              !Sub "${ClusterStack}BackendTGArn"
+          ContainerName: !Ref BackendContainerName
+          ContainerPort:
+            Fn::ImportValue:
+              !Sub "${NetworkingStack}BackendPort"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${SecurityStack}BackendServiceSg"
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  !Sub "${NetworkingStack}PublicSubnetIds"
+      PlatformVersion: LATEST
+      PropagateTags: SERVICE
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: "cruddur"
+        # TODO - If you want to log
+        # LogConfiguration
+        Services:
+          - DiscoveryName: backend-flask
+            PortName: backend-flask
+            ClientAliases:
+              - Port:
+                  Fn::ImportValue:
+                    !Sub "${NetworkingStack}BackendPort"
+      #ServiceRegistries:
+      #  - RegistryArn: !Sub 'arn:aws:servicediscovery:${AWS::Region}:${AWS::AccountId}:service/srv-cruddur-backend-flask'
+      #    Port:
+      #      Fn::ImportValue:
+      #        !Sub "${NetworkingStack}BackendPort"
+      #    ContainerName: !Ref BackendContainerName
+      #    ContainerPort: !Ref ContainerPort
+      ServiceName: !Ref BackendServiceName
+      TaskDefinition: !Ref BackendTaskDefinition
+  BackendTaskDefinition:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref BackendTaskFamily
+      ExecutionRoleArn:
+        Fn::ImportValue:
+          !Sub "${SecurityStack}BackendExecutionRoleArn"
+      TaskRoleArn:
+        Fn::ImportValue:
+          !Sub "${SecurityStack}BackendTaskRoleArn"
+      NetworkMode: 'awsvpc'
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      RequiresCompatibilities:
+        - 'FARGATE'
+      ContainerDefinitions:
+        - Name: 'xray'
+          Image: 'public.ecr.aws/xray/aws-xray-daemon'
+          Essential: true
+          User: '1337'
+          PortMappings:
+            - Name: 'xray'
+              ContainerPort: 2000
+              Protocol: 'udp'
+        - Name: 'backend-flask'
+          Image: !Ref BackendEcrImage 
+          Essential: true
+          HealthCheck:
+            Command:
+              - 'CMD-SHELL'
+              - 'python /backend-flask/bin/health-check'
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          PortMappings:
+            - Name: !Ref BackendContainerName
+              ContainerPort:
+                Fn::ImportValue:
+                  !Sub "${NetworkingStack}BackendPort"
+              Protocol: 'tcp'
+              AppProtocol: 'http'
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              awslogs-group: 'cruddur'
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref BackendServiceName
+          Environment:
+            - Name: 'OTEL_SERVICE_NAME'
+              Value: !Ref EnvOtelServiceName
+            - Name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
+              Value: !Ref EnvOtelExporterOtlpEndpoint
+            - Name: 'FRONTEND_URL'
+              Value:
+                Fn::ImportValue:
+                  !Sub "${NetworkingStack}FrontendUrl"
+            - Name: 'BACKEND_URL'
+              Value:
+                Fn::ImportValue:
+                  !Sub "${NetworkingStack}BackendUrl"
+            - Name: 'AWS_DEFAULT_REGION'
+              Value: !Ref AWS::Region
+          Secrets:
+            - Name: 'AWS_COGNITO_USER_POOL_ID'
+              ValueFrom: !Ref SecretsCognitoUserPoolId
+            - Name: 'AWS_COGNITO_USER_POOL_CLIENT_ID'
+              ValueFrom: !Ref SecretsCognitoUserPoolClientId
+            - Name: 'AWS_ACCESS_KEY_ID'
+              ValueFrom: !Ref SecretsAWSAccessKeyId
+            - Name: 'AWS_SECRET_ACCESS_KEY'
+              ValueFrom: !Ref SecretsSecretAccessKey
+            - Name: 'CONNECTION_URL'
+              ValueFrom: !Ref SecretsConnectionUrl
+            - Name: 'ROLLBAR_ACCESS_TOKEN'
+              ValueFrom: !Ref SecretsRollbarAccessToken
+            - Name: 'OTEL_EXPORTER_OTLP_HEADERS'
+              ValueFrom: !Ref SecretsOtelExporterOltpHeaders
+
+Outputs:
+  BackendServiceName:
+    Value: !GetAtt BackendFargateService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}BackendServName"

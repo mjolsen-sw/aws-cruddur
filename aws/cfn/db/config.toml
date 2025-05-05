@@ -6,5 +6,4 @@ stack_name = 'CrdDb'
 [parameters]
 NetworkingStack = 'CrdNet'
 SecurityStack = 'CrdSec'
-ClusterStack = 'CrdCluster'
 MasterUsername = 'cruddur'

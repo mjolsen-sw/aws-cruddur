@@ -13,14 +13,8 @@ Parameters:
   SecurityStack:
     Type: String
     Description: This is our security layer, e.g. IAM and Security Groups
-  ClusterStack:
-    Type: String
-    Description: This is our FargateCluster
   MasterUsername:
     Type: String
-  MasterUserPassword:
-    Type: String
-    NoEcho: true
   # Configs
   BackupRetentionPeriod:
     Type: Number
@@ -42,9 +36,8 @@ Parameters:
     Default: true
   EngineVersion:
     Type: String
-    #  DB Proxy only supports very specific versions of Postgres
-    #  https://stackoverflow.com/questions/63084648/which-rds-db-instances-are-supported-for-db-proxy
-    Default: '15.2'
+    #  https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RDS_Fea_Regions_DB-eng.Feature.RDSProxy.html
+    Default: '17.2'
 
 Resources:
   DBSubnetGroup:
@@ -79,10 +72,17 @@ Resources:
       # Can't be a reserved word for the chosen database engine.
       MasterUsername:  !Ref MasterUsername
       # Constraints: Must contain from 8 to 128 characters.
-      MasterUserPassword: !Ref MasterUserPassword
+      MasterUserPassword: '{{resolve:ssm-secure:/cruddur/db/MASTER_USER_PASSWORD:1}}'
+      Port: 
+        Fn::ImportValue:
+          !Sub "${NetworkingStack}DbPort"
       PubliclyAccessible: true
       VPCSecurityGroups:
         - Fn::ImportValue:
             !Sub "${SecurityStack}DbSg"
 
-#Outputs:
+Outputs:
+  DatabaseId:
+    Value: !Ref Database
+    Export:
+      Name: !Sub "${AWS::StackName}Database"

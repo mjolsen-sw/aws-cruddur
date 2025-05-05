@@ -81,7 +81,25 @@ Resources:
           ToPort:
             Fn::ImportValue:
               !Sub ${NetworkingStack}DbPort
-          Description: DB TCP
+          Description: Backend to DB TCP
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LambdaAvatarUrlSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          Description: LambdaAvatarUrl to DB TCP
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LamdaCogPostConfirmSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          Description: LamdaCogPostConfirm to DB TCP
   # EcrEndpointSg:
   #   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
   #   Type: AWS::EC2::SecurityGroup
@@ -133,6 +151,19 @@ Resources:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
           Description: Allow all outbound traffic
+  LamdaCogPostConfirmSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LamdaCogPostConfirmSg"
+      GroupDescription: Security for Lambda adding users to DB post Cognito user confirmation
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
   SsmEndpointSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -153,6 +184,11 @@ Resources:
           FromPort: 443
           ToPort: 443
           Description: LambdaAvatarUrl HTTPS
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LamdaCogPostConfirmSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: LamdaCogPostConfirm HTTPS
   # Roles
   BackendExecutionRole:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
@@ -237,6 +273,10 @@ Outputs:
     Value: !GetAtt LambdaAvatarUrlSg.GroupId
     Export:
       Name: !Sub "${AWS::StackName}LambdaAvatarUrlSg"
+  LambdaCogPostConfirmSecurityGroupId:
+    Value: !GetAtt LamdaCogPostConfirmSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}LamdaCogPostConfirmSg"
   SsmEndpointSecurityGroupId:
     Value: !GetAtt SsmEndpointSg.GroupId
     Export:

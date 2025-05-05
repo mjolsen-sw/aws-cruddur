@@ -164,6 +164,19 @@ Resources:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
           Description: Allow all outbound traffic
+  LambdaDdbMsgStreamSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LambdaDdbMsgStreamSg"
+      GroupDescription: Security for Lambda updating DynamoDB message streams
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
   SsmEndpointSg:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
     Type: AWS::EC2::SecurityGroup
@@ -186,6 +199,11 @@ Resources:
           Description: LambdaAvatarUrl HTTPS
         - IpProtocol: tcp
           SourceSecurityGroupId: !GetAtt LamdaCogPostConfirmSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: LamdaCogPostConfirm HTTPS
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LambdaDdbMsgStreamSg.GroupId
           FromPort: 443
           ToPort: 443
           Description: LamdaCogPostConfirm HTTPS
@@ -277,6 +295,10 @@ Outputs:
     Value: !GetAtt LamdaCogPostConfirmSg.GroupId
     Export:
       Name: !Sub "${AWS::StackName}LamdaCogPostConfirmSg"
+  LambdaDdbMsgStreamSecurityGroupId:
+    Value: !GetAtt LambdaDdbMsgStreamSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}LambdaDdbMsgStreamSg"
   SsmEndpointSecurityGroupId:
     Value: !GetAtt SsmEndpointSg.GroupId
     Export:

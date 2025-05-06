@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  The DynamoDB table used for user messages in our application.
+  - DynamoDB Table
+  - DynamoDB Stream Processor
+
+Parameters:
+  # Imported parameters
+  Environment:
+    Description: Deployment environment
+    Type: String
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Default: dev
+  StreamProcessorFunctionName:
+    Description: Name of the existing Lambda function that processes DynamoDB stream events
+    Type: String
+  StreamProcessorRoleArn:
+    Type: String
+    Description: ARN of the Lambda execution role for stream processor function
+  # Configuration
+  StreamBatchSize:
+    Description: Number of writes to DDB stream before processing the stream
+    Type: Number
+    Default: 1
+
+Resources:
+  DdbTable:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
+    Type: AWS::DynamoDB::Table
+    Properties:
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-dynamodb-table-attributedefinition.html
+      AttributeDefinitions:
+        - AttributeName: message_group_uuid
+          AttributeType: S
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      BillingMode: PROVISIONED
+      DeletionProtectionEnabled: true
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-dynamodb-table-globalsecondaryindex.html
+      GlobalSecondaryIndexes:
+        - IndexName: message-group-sk-index
+          KeySchema:
+            - AttributeName: message_group_uuid
+              KeyType: HASH
+            - AttributeName: sk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-dynamodb-table-keyschema.html
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableClass: STANDARD
+      TableName: !Sub "cruddur-messages-${Environment}"
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: Cruddur
+  StreamProcessorPermission:
+    # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-permission.html
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref StreamProcessorFunctionName
+      Principal: dynamodb.amazonaws.com
+      SourceArn: !GetAtt DdbTable.StreamArn
+  StreamProcessorMapping:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: !Ref StreamBatchSize
+      EventSourceArn: !GetAtt DdbTable.StreamArn
+      FunctionName: !Ref StreamProcessorFunctionName
+      StartingPosition: LATEST
+      Enabled: true
+  DdbAccessPolicy:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "LambdaExecutionAccessPolicy"
+      Roles:
+        - !Select [1, !Split ["/", !Ref StreamProcessorRoleArn]]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "DynamoDBTableAccess"
+            Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+            Resource:
+              - !GetAtt DdbTable.Arn
+          - Sid: "DynamoDBQueryAccess"
+            Effect: Allow
+            Action:
+              - dynamodb:Query
+            Resource:
+              - !GetAtt DdbTable.Arn
+              - !Sub "${DdbTable.Arn}/index/message-group-sk-index"
+          - Sid: "DynamoDBStreamAccess"
+            Effect: Allow
+            Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+              - dynamodb:DescribeStream
+            Resource: !GetAtt DdbTable.StreamArn
+          - Sid: "ListStreams"
+            Effect: Allow
+            Action: dynamodb:ListStreams
+            Resource: "*"
+          - Sid: "CreateLogGroup"
+            Effect: Allow
+            Action: logs:CreateLogGroup
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+          - Sid: "LogStreamAndPutLogEvents"
+            Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${StreamProcessorFunctionName}:*"
+
+Outputs:
+  DdbStreamArn:
+    Description: The ARN of the DynamoDB Stream
+    Value: !GetAtt DdbTable.StreamArn
+    Export:
+      Name: !Sub "${AWS::StackName}TableStreamArn"
+  DdbTableArn:
+    Description: The ARN of the DynamoDB table
+    Value: !GetAtt DdbTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}TableArn"
+  DdbTableName:
+    Description: The name of the DynamoDB table
+    Value: !Ref DdbTable
+    Export:
+      Name: !Sub "${AWS::StackName}TableName"

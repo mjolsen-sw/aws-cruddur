@@ -1,0 +1,9 @@
+[deploy]
+bucket = 'cfn-artifacts-cruddur-molsen'
+region = 'us-west-1'
+stack_name = 'CrdDdb'
+
+[parameters]
+Environment = 'prod'
+StreamProcessorFunctionName = 'cruddur-messaging-stream'
+StreamProcessorRoleArn = 'arn:aws:iam::009160064216:role/service-role/cruddur-messaging-stream-role-kplzdgtb'

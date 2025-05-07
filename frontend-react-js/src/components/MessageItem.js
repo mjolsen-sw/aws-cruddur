@@ -2,11 +2,13 @@ import './MessageItem.css';
 import { Link } from "react-router-dom";
 import { format_datetime, message_time_ago } from 'lib/DateTimeFormats';
 
+import ProfileAvatar from 'components/ProfileAvatar';
+
 export default function MessageItem(props) {
 
   return (
     <div className='message_item'>
-      <Link className='message_avatar' to={`/messages/` + props.message.message_group_uuid} />
+      <ProfileAvatar user={props.message} />
       <div className='message_content'>
         <div className='message_meta'>
           <div className='message_identity'>

@@ -1,0 +1,314 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  The security configurations for the stack, IAM and Security Groups.
+  - ALB Security Group
+  - Backend and Frontend Service Security Groups
+  - Database Security Group
+  - Presigned S3 URL Lambda Security Group
+  - SSM Interface Endpoint Security Group
+
+Parameters:
+  # Configured Parameters
+  NetworkingStack:
+    Type: String
+    Description: This is our base layer of networking components (e.g. VPC, subnets)
+
+Resources:
+  # Security Groups
+  AlbSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}AlbSG"
+      GroupDescription: Public Facing SG for our Cruddur ALB
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+          Description: INTERNET HTTPS
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+          Description: INTERNET HTTP
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound (default for ALB)
+  BackendServiceSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}BackendServSg"
+      GroupDescription: Security for Backend Fargate Service for Cruddur
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt AlbSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}BackendPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}BackendPort
+          Description: ALB HTTP
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound
+  DbSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}DbSg"
+      GroupDescription: Security for Postgres RDS DB for Cruddur
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          Description: Backend to DB TCP
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LambdaAvatarUrlSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          Description: LambdaAvatarUrl to DB TCP
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LamdaCogPostConfirmSg.GroupId
+          FromPort: 
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}DbPort
+          Description: LamdaCogPostConfirm to DB TCP
+  # EcrEndpointSg:
+  #   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupName: !Sub "${AWS::StackName}EcrEndpointSg"
+  #     GroupDescription: Security for ECR Interface Endpoints
+  #     VpcId:
+  #       Fn::ImportValue:
+  #         !Sub ${NetworkingStack}VpcId
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
+  #         FromPort: 443
+  #         ToPort: 443
+  #         Description: Backend HTTPS
+  FrontendServiceSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}FrontendServSg"
+      GroupDescription: Security for Frontend Fargate Service for Cruddur
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt AlbSg.GroupId
+          FromPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}FrontendPort
+          ToPort:
+            Fn::ImportValue:
+              !Sub ${NetworkingStack}FrontendPort
+          Description: ALB HTTP
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound
+  LambdaAvatarUrlSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LambdaAvatarUrlSg"
+      GroupDescription: Security for Lambda generating presigned urls for S3 avatar uploads
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+  LamdaCogPostConfirmSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LamdaCogPostConfirmSg"
+      GroupDescription: Security for Lambda adding users to DB post Cognito user confirmation
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+  LambdaDdbMsgStreamSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}LambdaDdbMsgStreamSg"
+      GroupDescription: Security for Lambda updating DynamoDB message streams
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+  SsmEndpointSg:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}SsmEndpointSg"
+      GroupDescription: Security for SSM Interface Endpoint
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt BackendServiceSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: Backend HTTPS
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LambdaAvatarUrlSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: LambdaAvatarUrl HTTPS
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LamdaCogPostConfirmSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: LamdaCogPostConfirm HTTPS
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt LambdaDdbMsgStreamSg.GroupId
+          FromPort: 443
+          ToPort: 443
+          Description: LamdaCogPostConfirm HTTPS
+  # Roles
+  BackendExecutionRole:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurBackendServiceExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'cruddur-backend-execution-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: 'SSMParameterStoreGetParameters'
+                Effect: 'Allow'
+                Action:
+                  - 'ssm:GetParameters'
+                  - 'ssm:GetParameter'
+                Resource:
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/backend-flask/*'
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cruddur/cognito/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+  BackendTaskRole:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CruddurServiceTaskRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'cruddur-task-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: 'VisualEditor0'
+                Effect: 'Allow'
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+
+Outputs:
+  # Security Groups
+  AlbSecurityGroupId:
+    Value: !GetAtt AlbSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}AlbSg"
+  BackendServiceSecurityGroupId:
+    Value: !GetAtt BackendServiceSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}BackendServiceSg"
+  DbSecurityGroupId:
+    Value: !GetAtt DbSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}DbSg"
+  # EcrEndpointSgId:
+  #   Value: !GetAtt EcrEndpointSg.GroupId
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}EcrEndpointSg"
+  FrontendServiceSecurityGroupId:
+    Value: !GetAtt FrontendServiceSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}FrontendServiceSg"
+  LambdaAvatarUrlSecurityGroupId:
+    Value: !GetAtt LambdaAvatarUrlSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}LambdaAvatarUrlSg"
+  LambdaCogPostConfirmSecurityGroupId:
+    Value: !GetAtt LamdaCogPostConfirmSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}LamdaCogPostConfirmSg"
+  LambdaDdbMsgStreamSecurityGroupId:
+    Value: !GetAtt LambdaDdbMsgStreamSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}LambdaDdbMsgStreamSg"
+  SsmEndpointSecurityGroupId:
+    Value: !GetAtt SsmEndpointSg.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}SsmEndpointSg"
+  # Roles
+  BackendExecutionRoleArn:
+    Value: !GetAtt BackendExecutionRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}BackendExecutionRoleArn"
+  BackendTaskRoleArn:
+    Value: !GetAtt BackendTaskRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}BackendTaskRoleArn"

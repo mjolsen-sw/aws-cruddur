@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource(
@@ -7,6 +8,10 @@ dynamodb = boto3.resource(
  region_name='us-west-1',
  endpoint_url='http://dynamodb.us-west-1.amazonaws.com'
 )
+
+# Read environment variables
+TABLE_NAME = os.environ['TABLE_NAME']   # e.g. cruddur-messages
+INDEX_NAME = os.environ['INDEX_NAME']   # e.g. message-group-sk-index
 
 def lambda_handler(event, context):
   eventName = event['Records'][0]['eventName']
@@ -21,11 +26,9 @@ def lambda_handler(event, context):
     message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
     print("GROUP ===>", group_uuid, message)
     
-    table_name = 'cruddur-messages'
-    index_name = 'message-group-sk-index'
-    table = dynamodb.Table(table_name)
+    table = dynamodb.Table(TABLE_NAME)
     data = table.query(
-      IndexName=index_name,
+      IndexName=INDEX_NAME,
       KeyConditionExpression=Key('message_group_uuid').eq(group_uuid)
     )
     print("RESP ===>", data['Items'])

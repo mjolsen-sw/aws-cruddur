@@ -1,0 +1,10 @@
+[deploy]
+bucket = 'cfn-artifacts-cruddur-molsen'
+region = 'us-west-1'
+stack_name = 'CrdFrontend'
+
+[parameters]
+CertificateArn = 'arn:aws:acm:us-east-1:009160064216:certificate/1cf02f8e-5f07-43af-8230-085dba4d63b8'
+HostedZoneName = 'molsen.dev'
+RootBucketName = 'app.cruddur.molsen.dev'
+WwwBucketName = 'www.app.cruddur.molsen.dev'

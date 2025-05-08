@@ -1,0 +1,11 @@
+[deploy]
+bucket = 'cfn-artifacts-cruddur-molsen'
+region = 'us-west-1'
+stack_name = 'CrdCicd'
+
+[parameters]
+ClusterStack = 'CrdCluster'
+ServiceStack = 'CrdSrv'
+ArtifactBucketName = 'codepipeline-cruddur-artifacts-mjolsen'
+GithubBranch = 'prod'
+GithubRepo = 'mjolsen-sw/aws-cruddur'

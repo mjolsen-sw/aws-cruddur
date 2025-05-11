@@ -25,6 +25,10 @@ jobs:
 
       - name: Generate sync.env and frontend-react-js.env
         run: bin/frontend/generate-env
+      
+      - name: Install Node.js dependencies
+        run: npm install
+        working-directory: ./frontend-react-js
 
       - name: Build the static site
         run: bin/frontend/static-build

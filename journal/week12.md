@@ -20,3 +20,10 @@ You must add the following to your GitHub Repository Secrets:
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - AWS_REGION
+### To Be Potentially Implemented
+Potentially implement OIDC provider for GitHub Actions instead of providing credentials directly.
+```
+aws/cfn/sync/sync.yaml
+aws/cfn/sync/config.toml
+bin/cfn/sync
+```

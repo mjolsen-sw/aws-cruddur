@@ -13,7 +13,7 @@ puts "distribution_id:      #{ENV["SYNC_CLOUDFRONT_DISTRUBTION_ID"]}"
 puts "build_dir:            #{ENV["SYNC_BUILD_DIR"]}"
 
 changeset_path = ENV["SYNC_OUTPUT_CHANGESET_PATH"]
-changeset_path = changeset_path.sub(".json","-#{Time.now.to_i}.json")
+# changeset_path = changeset_path.sub(".json","-#{Time.now.to_i}.json")
 
 puts "output_changset_path: #{changeset_path}"
 puts "auto_approve:         #{ENV["SYNC_AUTO_APPROVE"]}"

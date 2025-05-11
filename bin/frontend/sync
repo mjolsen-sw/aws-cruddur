@@ -3,7 +3,7 @@
 require 'aws_s3_website_sync'
 require 'dotenv'
 
-env_path = "~/cloud/aws-cruddur/sync.env"
+env_path = "./sync.env"
 Dotenv.load(env_path)
 
 puts "== configuration"

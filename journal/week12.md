@@ -14,3 +14,9 @@ bin/frontend/generate-env
 bin/frontend/static-build
 bin/frontend/sync
 ```
+## Github Actions
+Added `.github/workflows/sync.yaml`
+You must add the following to your GitHub Repository Secrets:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_REGION

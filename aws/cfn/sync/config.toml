@@ -1,0 +1,9 @@
+[deploy]
+bucket = 'cfn-artifacts-cruddur-molsen'
+region = 'us-west-1'
+stack_name = 'CrdSyncRole'
+
+[parameters]
+GitHubOrg = 'mjolsen-sw'
+RepositoryName = 'aws-cruddur'
+OIDCProviderArn = ''

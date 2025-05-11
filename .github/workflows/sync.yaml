@@ -1,0 +1,40 @@
+name: Deploy to S3 and invalidate CloudFront cache
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Generate sync.env and frontend-react-js.env
+        run: bin/frontend/generate-env
+
+      - name: Build the static site
+        run: bin/frontend/static-build
+
+      - name: Install gems
+        run: gem install dotenv aws_s3_website_sync
+
+      - name: Run deploy script
+        run: bin/frontend/sync
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}

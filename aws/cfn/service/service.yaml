@@ -191,12 +191,18 @@ Resources:
               Value: !Ref EnvOtelExporterOtlpEndpoint
             - Name: 'FRONTEND_URL'
               Value:
-                Fn::ImportValue:
-                  !Sub "${NetworkingStack}FrontendUrl"
+                Fn::Sub:
+                  - "https://${FrontendUrl}"
+                  - FrontendUrl:
+                      Fn::ImportValue:
+                        !Sub "${NetworkingStack}FrontendUrl"
             - Name: 'BACKEND_URL'
               Value:
-                Fn::ImportValue:
-                  !Sub "${NetworkingStack}BackendUrl"
+                Fn::Sub:
+                  - "https://${BackendUrl}"
+                  - BackendUrl:
+                      Fn::ImportValue:
+                        !Sub "${NetworkingStack}BackendUrl"
             - Name: 'AWS_DEFAULT_REGION'
               Value: !Ref AWS::Region
           Secrets:

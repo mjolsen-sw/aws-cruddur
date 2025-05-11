@@ -1,0 +1,39 @@
+#! /usr/bin/env bash
+#set -e # stop the execution of the script if it fails
+
+ABS_PATH=$(readlink -f "$0")
+CFN_PATH=$(dirname $ABS_PATH)
+BIN_PATH=$(dirname $CFN_PATH)
+PROJECT_PATH=$(dirname $BIN_PATH)
+CFN_TEMPLATE_PATH="$PROJECT_PATH/aws/cfn/cicd/cicd.yaml"
+CONFIG_PATH="$PROJECT_PATH/aws/cfn/cicd/config.toml"
+PACKAGED_PATH="$PROJECT_PATH/tmp/packaged-template.yaml"
+echo "CFN_TEMPLATE_PATH: $CFN_TEMPLATE_PATH"
+
+cfn-lint $CFN_TEMPLATE_PATH
+
+BUCKET=$(cfn-toml key deploy.bucket -t $CONFIG_PATH)
+REGION=$(cfn-toml key deploy.region -t $CONFIG_PATH)
+STACK_NAME=$(cfn-toml key deploy.stack_name -t $CONFIG_PATH)
+PARAMETERS=$(cfn-toml params v2 -t $CONFIG_PATH)
+
+# package
+# -----------------
+echo "== packaging CFN to S3..."
+aws cloudformation package \
+  --template-file $CFN_TEMPLATE_PATH \
+  --s3-bucket $BUCKET \
+  --s3-prefix cicd-package \
+  --region $REGION \
+  --output-template-file "$PACKAGED_PATH"
+
+aws cloudformation deploy \
+  --stack-name $STACK_NAME \
+  --s3-bucket $BUCKET \
+  --s3-prefix cicd \
+  --region $REGION \
+  --template-file "$PACKAGED_PATH" \
+  --no-execute-changeset \
+  --tags group=cruddur-cicd \
+  --parameter-overrides $PARAMETERS \
+  --capabilities CAPABILITY_NAMED_IAM

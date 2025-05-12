@@ -20,6 +20,8 @@ You must add the following to your GitHub Repository Secrets:
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - AWS_REGION
+- AWS_COGNITO_USER_POOL_ID
+- AWS_COGNITO_USER_POOL_CLIENT_ID
 ### To Be Potentially Implemented
 Potentially implement OIDC provider for GitHub Actions instead of providing credentials directly.
 ```

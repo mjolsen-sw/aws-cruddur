@@ -37,11 +37,7 @@ class CreateActivity:
       elif len(message) > 280:
         model['errors'] += ['message_exceed_max_chars']
 
-      if len(model['errors']) > 0:
-        model['data'] = {
-          'message': message
-        }   
-      else:
+      if len(model['errors']) == 0:
         expires_at = (now + ttl_offset).isoformat()
         uuid = CreateActivity.create_activity(cognito_user_id, message, expires_at)
         data = CreateActivity.get_activity_info(uuid)

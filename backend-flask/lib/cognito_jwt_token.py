@@ -1,4 +1,7 @@
 import jwt
+import os
+from flask import request, jsonify
+from functools import wraps
 
 class FlaskAWSCognitoError(Exception):
     pass
@@ -49,3 +52,34 @@ class CognitoJwtToken:
         public_key = self._get_public_key(headers["kid"])
         user_info = self._decode_token(token, public_key)
         return user_info
+
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv('AWS_COGNITO_USER_POOL_ID'),
+  user_pool_client_id=os.getenv('AWS_COGNITO_USER_POOL_CLIENT_ID'),
+  region=os.getenv('AWS_DEFAULT_REGION')
+)
+
+def auth_checked(f):
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    request.cognito_user_id = None
+    auth_header = request.headers.get("Authorization")
+
+    if auth_header:
+      try:
+        token = auth_header.split(" ")[1]  # Remove "Bearer " prefix
+        user_info = cognito_jwt_token.verify(token)
+        request.cognito_user_id = user_info["username"]
+      except TokenVerifyError as e:
+        print(f"TokenVerifyError: {e}")
+      except FlaskAWSCognitoError as e:
+        print(f"FlaskAWSCognitoError: {e}")
+      except Exception as e:
+        print(f"Unexcepted exception: {e}")
+
+    else:
+      print("Missing token")
+
+    return f(*args, **kwargs)
+
+  return decorated_function

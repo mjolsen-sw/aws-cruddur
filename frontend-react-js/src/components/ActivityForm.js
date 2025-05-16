@@ -4,22 +4,25 @@ import process from 'process';
 import { ReactComponent as BombIcon } from './svg/bomb.svg';
 import { getAccessToken } from 'lib/CheckAuth';
 
+import FormErrors from 'components/FormErrors';
+
 export default function ActivityForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
   const [ttl, setTtl] = React.useState('7-days');
+  const [errors, setErrors] = React.useState([]);
 
-  const classes = []
-  classes.push('count')
+  const classes = [];
+  classes.push('count');
   if (240 - count < 0) {
-    classes.push('err')
+    classes.push('err');
   }
 
   const onsubmit = async (event) => {
     event.preventDefault();
     try {
       const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities`
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities`;
       const res = await fetch(backend_url, {
         method: "POST",
         headers: {
@@ -37,15 +40,16 @@ export default function ActivityForm(props) {
         // add activity to the feed
         props.setActivities(current => [data, ...current]);
         // reset and close the form
-        setCount(0)
-        setMessage('')
-        setTtl('7-days')
-        props.setPopped(false)
+        setCount(0);
+        setMessage('');
+        setTtl('7-days');
+        setErrors([]);
+        props.setPopped(false);
       } else {
-        console.log(res)
+        setErrors(data);
       }
     } catch (err) {
-      console.log(err);
+      setErrors([err.message]);
     }
   }
 
@@ -89,6 +93,7 @@ export default function ActivityForm(props) {
             </select>
           </div>
         </div>
+        <FormErrors errors={errors} />
       </form>
     );
   }

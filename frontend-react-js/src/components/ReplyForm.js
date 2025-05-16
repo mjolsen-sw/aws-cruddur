@@ -1,13 +1,15 @@
 import './ReplyForm.css';
 import React from "react";
 import process from 'process';
+import { getAccessToken } from 'lib/CheckAuth';
 
 import ActivityContent from 'components/ActivityContent';
-import { getAccessToken } from 'lib/CheckAuth';
+import FormErrors from 'components/FormErrors';
 
 export default function ReplyForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
+  const [errors, setErrors] = React.useState([]);
 
   const classes = [];
   classes.push('count');
@@ -45,11 +47,13 @@ export default function ReplyForm(props) {
         // reset and close the form
         setCount(0);
         setMessage('');
+        setErrors([]);
         props.setPopped(false);
       } else {
-        console.log(res);
+        setErrors(data);
       }
     } catch (err) {
+      setErrors([err.message]);
       console.log(err);
     }
   }
@@ -62,6 +66,7 @@ export default function ReplyForm(props) {
   const close = (event) => {
     if (event.target.classList.contains("reply_popup")) {
       props.setPopped(false)
+      setErrors([]);
     }
   }
 
@@ -75,6 +80,9 @@ export default function ReplyForm(props) {
       <div className="popup_form_wrap reply_popup" onClick={close}>
         <div className="popup_form">
           <div className="popup_heading">
+            <div className="popup_title">
+              Reply to...
+            </div>
           </div>
           <div className="popup_content">
             <div className="activity_wrap">
@@ -94,6 +102,7 @@ export default function ReplyForm(props) {
                 <div className={classes.join(' ')}>{240 - count}</div>
                 <button type='submit'>Reply</button>
               </div>
+              <FormErrors errors={errors} />
             </form>
           </div>
         </div>

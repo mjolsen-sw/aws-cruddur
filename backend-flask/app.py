@@ -5,6 +5,8 @@ from lib.cors import configure_cors
 from lib.rollbar import configure_rollbar
 
 from routes.api import api as api_blueprint
+from routes.activities import acts as acts_blueprint
+from routes.messages import msgs as msgs_blueprint
 
 # # aws x-ray
 # from aws_xray_sdk.core import xray_recorder
@@ -41,6 +43,8 @@ configure_rollbar(app)
 #     return response
 
 app.register_blueprint(api_blueprint, url_prefix='/api')
+app.register_blueprint(acts_blueprint, url_prefix='/api/activities')
+app.register_blueprint(msgs_blueprint, url_prefix='/api/messages')
 
 if __name__ == "__main__":
   app.run(debug=True)

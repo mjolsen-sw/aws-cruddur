@@ -2,8 +2,8 @@ import './MessageForm.css';
 import React from "react";
 import process from 'process';
 import { useParams } from 'react-router-dom';
-import { getAccessToken } from 'lib/CheckAuth';
 
+import { post } from 'lib/Requests';
 import FormErrors from 'components/FormErrors';
 
 export default function ActivityForm(props) {
@@ -20,39 +20,30 @@ export default function ActivityForm(props) {
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages`;
-      console.log('onsubmit payload', message);
-      let json = { message: message };
-      if (params.handle) {
-        json.handle = params.handle;
-      } else {
-        json.message_group_uuid = params.message_group_uuid;
-      }
-      const res = await fetch(backend_url, {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify(json)
-      });
-      let data = await res.json();
-      if (res.status === 200) {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages`;
+    const payload_data = { message: message };
+    if (params.handle) {
+      payload_data.handle = params.handle;
+    } else {
+      payload_data.message_group_uuid = params.message_group_uuid;
+    }
+    const options = {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      auth: true,
+      success: function (data) {
         setErrors([]);
         if (data.message_group_uuid) {
           window.location.href = `/messages/${data.message_group_uuid}`;
         } else {
           props.setMessages(current => [...current, data]);
         }
-      } else {
-        setErrors(data);
-      }
-    } catch (err) {
-      setErrors([err.message]);
+      },
+      setErrors: setErrors
     }
+    post(url, payload_data, options);
   }
 
   const textarea_onchange = (event) => {

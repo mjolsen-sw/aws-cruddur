@@ -1,8 +1,8 @@
 import './ReplyForm.css';
 import React from "react";
 import process from 'process';
-import { getAccessToken } from 'lib/CheckAuth';
 
+import { post } from 'lib/Requests';
 import ActivityContent from 'components/ActivityContent';
 import FormErrors from 'components/FormErrors';
 
@@ -19,22 +19,17 @@ export default function ReplyForm(props) {
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/${props.activity.uuid}/reply`
-      const res = await fetch(backend_url, {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          message: message
-        }),
-      });
-      let data = await res.json();
-      if (res.status === 200) {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/${props.activity.uuid}/reply`;
+    const payload_data = {
+      message: message
+    };
+    const options = {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      auth: true,
+      success: function (data) {
         // add activity to the feed
         let activities_deep_copy = JSON.parse(JSON.stringify(props.activities));
         let found_activity = activities_deep_copy.find(function (element) {
@@ -49,12 +44,10 @@ export default function ReplyForm(props) {
         setMessage('');
         setErrors([]);
         props.setPopped(false);
-      } else {
-        setErrors(data);
-      }
-    } catch (err) {
-      setErrors([err.message]);
+      },
+      setErrors: setErrors
     }
+    post(url, payload_data, options);
   }
 
   const textarea_onchange = (event) => {

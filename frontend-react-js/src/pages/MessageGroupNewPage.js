@@ -7,7 +7,8 @@ import MessageGroupFeed from 'components/MessageGroupFeed';
 import MessagesFeed from 'components/MessageFeed';
 import MessagesForm from 'components/MessageForm';
 
-import { checkAuth, getAccessToken } from 'lib/CheckAuth';
+import { checkAuth } from 'lib/CheckAuth';
+import { get } from 'lib/Requests';
 
 export default function MessageGroupPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -19,42 +20,27 @@ export default function MessageGroupPage() {
   const params = useParams();
 
   const loadUserShortData = async () => {
-    try {
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/users/@${params.handle}/short`;
-      const res = await fetch(backend_url, {
-        method: "GET"
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        console.log('other user:', resJson);
-        setOtherUser(resJson);
-      } else {
-        console.log(res);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/users/@${params.handle}/short`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: false,
+      success: function (data) {
+        setOtherUser(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   const loadMessageGroupsData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`
-      const res = await fetch(backend_url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setMessageGroups(resJson);
-      } else {
-        console.log(res);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setMessageGroups(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   React.useEffect(() => {

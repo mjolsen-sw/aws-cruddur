@@ -7,7 +7,8 @@ import ActivityFeed from 'components/ActivityFeed';
 import ActivityForm from 'components/ActivityForm';
 import ReplyForm from 'components/ReplyForm';
 
-import { checkAuth, getAccessToken } from 'lib/CheckAuth';
+import { checkAuth } from 'lib/CheckAuth';
+import { get } from 'lib/Requests';
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -18,22 +19,15 @@ export default function HomeFeedPage() {
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
-      let init = { method: "GET" };
-      if (accessToken)
-        init.headers = { Authorization: `Bearer ${accessToken}` };
-      const res = await fetch(backend_url, init);
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setActivities(resJson);
-      } else {
-        console.log(res);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setActivities(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   React.useEffect(() => {

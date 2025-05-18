@@ -4,7 +4,8 @@ import React from "react";
 import DesktopNavigation from 'components/DesktopNavigation';
 import MessageGroupFeed from 'components/MessageGroupFeed';
 
-import { checkAuth, getAccessToken } from 'lib/CheckAuth';
+import { checkAuth } from 'lib/CheckAuth';
+import { get } from 'lib/Requests';
 
 export default function MessageGroupsPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -13,24 +14,15 @@ export default function MessageGroupsPage() {
   const dataFetchedRef = React.useRef(false);
 
   const loadData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`
-      const res = await fetch(backend_url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setMessageGroups(resJson)
-      } else {
-        console.log(res)
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setMessageGroups(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   React.useEffect(() => {

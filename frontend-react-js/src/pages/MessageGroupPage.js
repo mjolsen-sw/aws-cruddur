@@ -7,7 +7,8 @@ import MessageGroupFeed from 'components/MessageGroupFeed';
 import MessagesFeed from 'components/MessageFeed';
 import MessagesForm from 'components/MessageForm';
 
-import { checkAuth, getAccessToken } from 'lib/CheckAuth';
+import { checkAuth } from 'lib/CheckAuth';
+import { get } from 'lib/Requests';
 
 export default function MessageGroupPage() {
   const [messageGroups, setMessageGroups] = React.useState([]);
@@ -18,45 +19,27 @@ export default function MessageGroupPage() {
   const params = useParams();
 
   const loadMessageGroupsData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`
-      const res = await fetch(backend_url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setMessageGroups(resJson)
-      } else {
-        console.log(res)
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/groups`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setMessageGroups(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   const loadMessageGroupData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${params.message_group_uuid}`
-      const res = await fetch(backend_url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setMessages(resJson)
-      } else {
-        console.log(res)
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${params.message_group_uuid}`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setMessages(data);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   React.useEffect(() => {
@@ -65,9 +48,14 @@ export default function MessageGroupPage() {
     dataFetchedRef.current = true;
 
     loadMessageGroupsData();
-    loadMessageGroupData();
     checkAuth(setUser);
   }, []);
+
+  React.useEffect(() => {
+    if (params && params.message_group_uuid) {
+      loadMessageGroupData();
+    }
+  }, [params]);
 
   return (
     <article>

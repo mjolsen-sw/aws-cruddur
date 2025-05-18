@@ -45,6 +45,8 @@ async function request(method, url, payload_data, options, with_return = false) 
     } else {
       if (options.hasOwnProperty('setErrors')) {
         options.setErrors(data);
+      } else {
+        console.error(data);
       }
       if (with_return) {
         return options.returnOnError;
@@ -53,6 +55,8 @@ async function request(method, url, payload_data, options, with_return = false) 
   } catch (err) {
     if (options.hasOwnProperty('setErrors')) {
       options.setErrors([err.message]);
+    } else {
+      console.error(err.message);
     }
     if (with_return) {
       return options.returnOnError;

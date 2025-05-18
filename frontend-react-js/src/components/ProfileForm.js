@@ -63,10 +63,11 @@ export default function ProfileForm(props) {
       },
       auth: true,
       success: function (data) {
-        setBio("");
-        setDisplayName("");
-        props.setPopped(false);
-        setErrors([]);
+        // setBio("");
+        // setDisplayName("");
+        // props.setPopped(false);
+        // setErrors([]);
+        window.location.reload();
       },
       setErrors: setErrors
     }

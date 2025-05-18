@@ -4,9 +4,12 @@ import process from 'process';
 import { useParams } from 'react-router-dom';
 import { getAccessToken } from 'lib/CheckAuth';
 
+import FormErrors from 'components/FormErrors';
+
 export default function ActivityForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
+  const [errors, setErrors] = React.useState([]);
   const params = useParams();
 
   const classes = [];
@@ -38,18 +41,17 @@ export default function ActivityForm(props) {
       });
       let data = await res.json();
       if (res.status === 200) {
-        console.log('data:', data)
+        setErrors([]);
         if (data.message_group_uuid) {
-          console.log('redirect to message group')
-          window.location.href = `/messages/${data.message_group_uuid}`
+          window.location.href = `/messages/${data.message_group_uuid}`;
         } else {
           props.setMessages(current => [...current, data]);
         }
       } else {
-        console.log(res)
+        setErrors(data);
       }
     } catch (err) {
-      console.log(err);
+      setErrors([err.message]);
     }
   }
 
@@ -73,6 +75,7 @@ export default function ActivityForm(props) {
         <div className={classes.join(' ')}>{1024 - count}</div>
         <button type='submit'>Message</button>
       </div>
+      <FormErrors errors={errors} />
     </form>
   );
 }

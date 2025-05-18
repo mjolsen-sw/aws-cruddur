@@ -3,9 +3,12 @@ import React from "react";
 import process from 'process';
 import { getAccessToken } from 'lib/CheckAuth';
 
+import FormErrors from 'components/FormErrors';
+
 export default function ProfileForm(props) {
   const [bio, setBio] = React.useState("");
   const [displayName, setDisplayName] = React.useState("");
+  const [errors, setErrors] = React.useState([]);
 
   React.useEffect(() => {
     setBio(props.profile.bio || "");
@@ -78,16 +81,17 @@ export default function ProfileForm(props) {
           display_name: displayName
         }),
       });
-
+      let data = await res.json();
       if (res.ok) {
         setBio("");
         setDisplayName("");
         props.setPopped(false);
+        setErrors([]);
       } else {
-        console.log(res)
+        setErrors(data);
       }
     } catch (err) {
-      console.log(err);
+      setErrors([err.message]);
     }
   }
 
@@ -138,6 +142,7 @@ export default function ProfileForm(props) {
               />
             </div>
           </div>
+          <FormErrors errors={errors} />
         </form>
       </div>
     );

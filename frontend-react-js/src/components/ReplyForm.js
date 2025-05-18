@@ -54,7 +54,6 @@ export default function ReplyForm(props) {
       }
     } catch (err) {
       setErrors([err.message]);
-      console.log(err);
     }
   }
 

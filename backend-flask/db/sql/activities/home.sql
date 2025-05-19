@@ -6,7 +6,6 @@ SELECT
   a.replies_count,
   a.reposts_count,
   a.likes_count,
-  a.reply_to_activity_uuid,
   a.expires_at,
   a.created_at,
   (

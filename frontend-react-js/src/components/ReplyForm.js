@@ -35,8 +35,12 @@ export default function ReplyForm(props) {
         let found_activity = activities_deep_copy.find(function (element) {
           return element.uuid === props.activity.uuid;
         });
-        found_activity.reply_count += 1;
-        found_activity.replies.push(data);
+
+        // ignore if replying to a reply
+        if (found_activity !== undefined) {
+          found_activity.reply_count += 1;
+          found_activity.replies.push(data);
+        }
 
         props.setActivities(activities_deep_copy);
         // reset and close the form

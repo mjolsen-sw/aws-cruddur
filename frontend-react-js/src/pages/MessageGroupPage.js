@@ -30,18 +30,6 @@ export default function MessageGroupPage() {
     get(url, options);
   };
 
-  const loadMessageGroupData = async () => {
-    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${params.message_group_uuid}`;
-    const options = {
-      headers: { 'Accept': 'application/json' },
-      auth: true,
-      success: function (data) {
-        setMessages(data);
-      }
-    };
-    get(url, options);
-  };
-
   React.useEffect(() => {
     //prevents double call
     if (dataFetchedRef.current) return;
@@ -52,10 +40,16 @@ export default function MessageGroupPage() {
   }, []);
 
   React.useEffect(() => {
-    if (params && params.message_group_uuid) {
-      loadMessageGroupData();
-    }
-  }, [params]);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/messages/${params.message_group_uuid}`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setMessages(data);
+      }
+    };
+    get(url, options);
+  }, [params.message_group_uuid]);
 
   return (
     <article>

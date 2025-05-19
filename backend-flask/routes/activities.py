@@ -51,6 +51,7 @@ def data_activities():
   return model_json(model)
 
 @acts.route("/<string:activity_uuid>", methods=['GET'])
+@cross_origin()
 def data_show_activity(activity_uuid):
   model = ShowActivity.run(activity_uuid=activity_uuid)
   return model_json(model)

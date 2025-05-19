@@ -1,18 +1,31 @@
-from datetime import datetime, timedelta, timezone
+from aws_xray_sdk.core import xray_recorder
+
+from lib.db import db
+
 class ShowActivity:
+  @staticmethod
   def run(activity_uuid):
-    now = datetime.now(timezone.utc).astimezone()
-    results = [{
-      'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
-      'handle':  'Andrew Brown',
-      'message': 'Cloud is fun!',
-      'created_at': (now - timedelta(days=2)).isoformat(),
-      'expires_at': (now + timedelta(days=5)).isoformat(),
-      'replies': {
-        'uuid': '26e12864-1c26-5c3a-9658-97a10f8fea67',
-        'handle':  'Worf',
-        'message': 'This post has no honor!',
-        'created_at': (now - timedelta(days=2)).isoformat()
+    with xray_recorder.in_segment('show_activity_run') as segment:
+      model = {
+        'errors': [],
+        'data': None
       }
-    }]
-    return results
+
+      if activity_uuid == None or len(activity_uuid) < 1:
+        model['errors'] += ['activity_uuid_blank'] 
+      elif len(activity_uuid) > 36:
+        model['errors'] += ['activity_uuid_exceed_max_chars']
+
+      segment.put_annotation("show.activity.uuid", activity_uuid)
+      if len(model['errors']) == 0:
+        data = ShowActivity.show_activity_info(activity_uuid)
+        model['data'] = data
+      return model
+  
+  @staticmethod
+  def show_activity_info(activity_uuid):
+    with xray_recorder.in_subsegment('show_activity_show') as segment:
+      sql = db.template('activities', 'show')
+      params = { 'uuid': activity_uuid }
+      data = db.query_array_json(sql, params)
+      return data

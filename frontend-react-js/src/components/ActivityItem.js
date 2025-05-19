@@ -1,5 +1,7 @@
 import './ActivityItem.css';
 
+import { Link } from "react-router-dom";
+
 import ActivityContent from 'components/ActivityContent';
 import ActivityActionReply from 'components/ActivityActionReply';
 import ActivityActionRepost from 'components/ActivityActionRepost';
@@ -23,7 +25,7 @@ export default function ActivityItem(props) {
   }
 
   return (
-    <div className='activity_item'>
+    <Link className='activity_item' to={`/@${props.activity.handle}/status/${props.activity.uuid}`}>
       <div className="activity_main">
         <ActivityContent activity={props.activity} />
         <div className="activity_actions">
@@ -34,6 +36,6 @@ export default function ActivityItem(props) {
         </div>
       </div>
       {replies}
-    </div>
+    </Link>
   );
 }

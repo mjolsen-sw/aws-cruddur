@@ -21,7 +21,14 @@ export default function ActivityShowPage() {
 
   const params = useParams();
 
-  const loadData = async () => {
+  React.useEffect(() => {
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
+
+    checkAuth(setUser);
+  }, []);
+
+  React.useEffect(() => {
     const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/${params.activity_uuid}`;
     const options = {
       headers: { 'Accept': 'application/json' },
@@ -31,22 +38,11 @@ export default function ActivityShowPage() {
       }
     };
     get(url, options);
-  };
-
-  React.useEffect(() => {
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
-
-    checkAuth(setUser);
-  }, []);
-
-  React.useEffect(() => {
-    loadData();
   }, [params.activity_uuid]);
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+      <DesktopNavigation user={user} active={'show'} setPopped={setPopped} />
       <div className='content'>
         <ActivityForm
           popped={popped}
@@ -61,7 +57,7 @@ export default function ActivityShowPage() {
           activities={activities}
         />
         <ActivityFeed
-          title="Home"
+          title="Show"
           setReplyActivity={setReplyActivity}
           setPopped={setPoppedReply}
           activities={activities}

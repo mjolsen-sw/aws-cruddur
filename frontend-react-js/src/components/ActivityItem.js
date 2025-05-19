@@ -1,7 +1,5 @@
 import './ActivityItem.css';
 
-import { Link } from "react-router-dom";
-
 import ActivityContent from 'components/ActivityContent';
 import ActivityActionReply from 'components/ActivityActionReply';
 import ActivityActionRepost from 'components/ActivityActionRepost';
@@ -12,7 +10,7 @@ export default function ActivityItem(props) {
 
   let replies;
   if (props.activity.replies) {
-    replies = <div className="replies">
+    replies = <div className='replies'>
       {props.activity.replies.map(reply => {
         return <ActivityItem
           setReplyActivity={props.setReplyActivity}
@@ -24,11 +22,16 @@ export default function ActivityItem(props) {
     </div>
   }
 
+  const click = (event) => {
+    event.preventDefault();
+    window.location.href = `/@${props.activity.handle}/status/${props.activity.uuid}`;
+  }
+
   return (
-    <Link className='activity_item' to={`/@${props.activity.handle}/status/${props.activity.uuid}`}>
-      <div className="activity_main">
+    <div className='activity_item'>
+      <div className='activity_main' onClick={click}>
         <ActivityContent activity={props.activity} />
-        <div className="activity_actions">
+        <div className='activity_actions'>
           <ActivityActionReply setReplyActivity={props.setReplyActivity} activity={props.activity} setPopped={props.setPopped} activity_uuid={props.activity.uuid} count={props.activity.replies_count} />
           <ActivityActionRepost activity_uuid={props.activity.uuid} count={props.activity.reposts_count} />
           <ActivityActionLike activity_uuid={props.activity.uuid} count={props.activity.likes_count} />
@@ -36,6 +39,6 @@ export default function ActivityItem(props) {
         </div>
       </div>
       {replies}
-    </Link>
+    </div>
   );
 }

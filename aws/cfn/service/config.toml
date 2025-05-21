@@ -6,4 +6,5 @@ stack_name = 'CrdSrv'
 [parameters]
 NetworkingStack = 'CrdNet'
 SecurityStack = 'CrdSec'
+DdbStack = 'CrdDdb'
 ClusterStack = 'CrdCluster'

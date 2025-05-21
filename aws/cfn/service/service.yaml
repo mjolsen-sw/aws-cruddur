@@ -14,6 +14,14 @@ Parameters:
   SecurityStack:
     Type: String
     Description: This is our security layer, e.g. IAM, Security Groups
+  # DdbStack:
+  #   Type: String
+  #   Description: This is our DynamoDB layer, e.g. DynamoDB Table
+  # TODO: remove this and use DdbStack instead
+  DdbTableName:
+    Type: String
+    Description: This is our DynamoDB table name
+    default: cruddur-messages
   ClusterStack:
     Type: String
     Description: This is our cluster layer, e.g. ECS Cluster, ALB
@@ -64,19 +72,6 @@ Parameters:
   SecretsOtelExporterOltpHeaders:
     Type: String
     Default: 'arn:aws:ssm:us-west-1:009160064216:parameter/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS'
-  # frontend ------
-  # FrontendServiceName:
-  #   Type: String
-  #   Default: frontend-react-js
-  # FrontendContainerName:
-  #   Type: String
-  #   Default: frontend-react-js
-  # FrontendTaskFamily:
-  #   Type: String
-  #   Default: frontend-react-js
-  # FrontendEcrImage:
-  #   Type: String
-  #   Default: '009160064216.dkr.ecr.us-west-1.amazonaws.com/frontend-react-js'
 
 Resources:
   BackendFargateService:
@@ -205,6 +200,10 @@ Resources:
                         !Sub "${NetworkingStack}BackendUrl"
             - Name: 'AWS_DEFAULT_REGION'
               Value: !Ref AWS::Region
+            - Name: 'DDB_TABLE_NAME'
+              Value: !Ref DdbTableName
+                # Fn::ImportValue:
+                #   !Sub "${DdbStack}TableName"
           Secrets:
             - Name: 'AWS_COGNITO_USER_POOL_ID'
               ValueFrom: !Ref SecretsCognitoUserPoolId

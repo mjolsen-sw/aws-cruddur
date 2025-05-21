@@ -22,6 +22,10 @@ Parameters:
     Type: String
     Description: ARN of the Lambda execution role for stream processor function
   # Configuration
+  TableName:
+    Description: Name of the DynamoDB table
+    Type: String
+    Default: cruddur-messages
   StreamBatchSize:
     Description: Number of writes to DDB stream before processing the stream
     Type: Number
@@ -67,7 +71,7 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
       TableClass: STANDARD
-      TableName: !Sub "cruddur-messages-${Environment}"
+      TableName: !Ref TableName
       Tags:
         - Key: Environment
           Value: !Ref Environment

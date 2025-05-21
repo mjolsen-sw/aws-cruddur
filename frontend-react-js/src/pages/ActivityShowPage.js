@@ -1,5 +1,6 @@
 import './ActivityShowPage.css';
 import React from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 
 import DesktopNavigation from 'components/DesktopNavigation';
 import DesktopSidebar from 'components/DesktopSidebar';
@@ -9,7 +10,6 @@ import ReplyForm from 'components/ReplyForm';
 
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
-import { useParams } from 'react-router-dom';
 
 export default function ActivityShowPage() {
   const [activities, setActivities] = React.useState([]);
@@ -20,6 +20,7 @@ export default function ActivityShowPage() {
   const dataFetchedRef = React.useRef(false);
 
   const params = useParams();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (dataFetchedRef.current) return;
@@ -56,6 +57,7 @@ export default function ActivityShowPage() {
           setActivities={setActivities}
           activities={activities}
         />
+        <div className="back" onClick={() => navigate(-1)}>&larr;</div>
         <ActivityFeed
           title="Show"
           setReplyActivity={setReplyActivity}

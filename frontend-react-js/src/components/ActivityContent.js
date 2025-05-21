@@ -17,14 +17,18 @@ export default function ActivityContent(props) {
 
   return (
     <div className='activity_content_wrap'>
-      <Link to={`/@` + props.activity.handle}>
+      <Link to={`/@` + props.activity.handle} onClick={e => e.stopPropagation()}>
         <ProfileAvatar user={props.activity} />
       </Link>
       <div className='activity_content'>
         <div className='activity_meta'>
           <div className='activity_identity'>
-            <Link className='display_name' to={`/@` + props.activity.handle}>{props.activity.display_name}</Link>
-            <Link className="handle" to={`/@` + props.activity.handle}>@{props.activity.handle}</Link>
+            <Link className='display_name' to={`/@` + props.activity.handle} onClick={e => e.stopPropagation()}>
+              {props.activity.display_name}
+            </Link>
+            <Link className="handle" to={`/@` + props.activity.handle} onClick={e => e.stopPropagation()}>
+              @{props.activity.handle}
+            </Link>
           </div>{/* activity_identity */}
           <div className='activity_times'>
             <div className="created_at" title={format_datetime(props.activity.created_at)}>

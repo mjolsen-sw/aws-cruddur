@@ -8,6 +8,7 @@ import ActivityFeed from 'components/ActivityFeed';
 import ActivityForm from 'components/ActivityForm';
 import ProfileHeading from 'components/ProfileHeading';
 import ProfileForm from 'components/ProfileForm';
+import ReplyForm from 'components/ReplyForm';
 
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
@@ -17,6 +18,8 @@ export default function UserFeedPage() {
   const [profile, setProfile] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [poppedProfile, setPoppedProfile] = React.useState([]);
+  const [poppedReply, setPoppedReply] = React.useState([]);
+  const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
   const userFetchedRef = React.useRef(false);
@@ -64,9 +67,24 @@ export default function UserFeedPage() {
           popped={poppedProfile}
           setPopped={setPoppedProfile}
         />
+        <ReplyForm
+          activity={replyActivity}
+          popped={poppedReply}
+          setPopped={setPoppedReply}
+          setActivities={setActivities}
+          activities={activities}
+        />
         <div className='activity_feed'>
-          <ProfileHeading setPopped={setPoppedProfile} profile={profile} user={user} />
-          <ActivityFeed activities={activities} />
+          <ProfileHeading
+            setPopped={setPoppedProfile}
+            profile={profile}
+            user={user}
+          />
+          <ActivityFeed
+            activities={activities}
+            setReplyActivity={setReplyActivity}
+            setPopped={setPoppedReply}
+          />
         </div>
       </div>
       <DesktopSidebar user={user} />

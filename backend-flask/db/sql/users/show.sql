@@ -19,6 +19,7 @@ SELECT
       users.display_name,
       users.handle,
       activities.message,
+      activities.replies_count,
       activities.created_at,
       activities.expires_at
     FROM public.activities

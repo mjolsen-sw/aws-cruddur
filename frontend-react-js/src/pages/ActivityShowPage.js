@@ -1,5 +1,6 @@
-import './HomeFeedPage.css';
+import './ActivityShowPage.css';
 import React from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 
 import DesktopNavigation from 'components/DesktopNavigation';
 import DesktopSidebar from 'components/DesktopSidebar';
@@ -10,7 +11,7 @@ import ReplyForm from 'components/ReplyForm';
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
 
-export default function HomeFeedPage() {
+export default function ActivityShowPage() {
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
   const [poppedReply, setPoppedReply] = React.useState(false);
@@ -18,8 +19,18 @@ export default function HomeFeedPage() {
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
 
-  const loadData = async () => {
-    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`;
+  const params = useParams();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
+
+    checkAuth(setUser);
+  }, []);
+
+  React.useEffect(() => {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/${params.activity_uuid}`;
     const options = {
       headers: { 'Accept': 'application/json' },
       auth: true,
@@ -28,19 +39,11 @@ export default function HomeFeedPage() {
       }
     };
     get(url, options);
-  };
-
-  React.useEffect(() => {
-    if (dataFetchedRef.current) return;
-    dataFetchedRef.current = true;
-
-    loadData();
-    checkAuth(setUser);
-  }, []);
+  }, [params.activity_uuid]);
 
   return (
     <article>
-      <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+      <DesktopNavigation user={user} active={'show'} setPopped={setPopped} />
       <div className='content'>
         <ActivityForm
           popped={popped}
@@ -54,8 +57,9 @@ export default function HomeFeedPage() {
           setActivities={setActivities}
           activities={activities}
         />
+        <div className="back" onClick={() => navigate(-1)}>&larr;</div>
         <ActivityFeed
-          title="Home"
+          title="Show"
           setReplyActivity={setReplyActivity}
           setPopped={setPoppedReply}
           activities={activities}

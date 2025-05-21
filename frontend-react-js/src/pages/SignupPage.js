@@ -5,19 +5,21 @@ import { Link } from "react-router-dom";
 
 import { signUp } from '@aws-amplify/auth';
 
+import FormErrors from 'components/FormErrors';
+
 export default function SignupPage() {
   // Username is Email
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [cognitoErrors, setCognitoErrors] = React.useState('');
+  const [errors, setErrors] = React.useState('');
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    setCognitoErrors('');
+    setErrors([]);
     try {
-      const { user } = await signUp({
+      await signUp({
         username: email,
         password,
         options: {
@@ -27,15 +29,13 @@ export default function SignupPage() {
             email,
           },
         },
-        autoSignIn: { // optional - enables auto sign in after user is confirmed
+        autoSignIn: {
           enabled: true,
         }
       });
-      console.log(user);
       window.location.href = `/confirm?email=${email}`;
     } catch (error) {
-      console.log(error);
-      setCognitoErrors(error.message);
+      setErrors([error.message]);
     }
     return false;
   }
@@ -51,11 +51,6 @@ export default function SignupPage() {
   }
   const password_onchange = (event) => {
     setPassword(event.target.value);
-  }
-
-  let errors;
-  if (cognitoErrors) {
-    errors = <div className='errors'>{cognitoErrors}</div>;
   }
 
   return (
@@ -78,7 +73,6 @@ export default function SignupPage() {
                 onChange={name_onchange}
               />
             </div>
-
             <div className='field text_field email'>
               <label>Email</label>
               <input
@@ -87,7 +81,6 @@ export default function SignupPage() {
                 onChange={email_onchange}
               />
             </div>
-
             <div className='field text_field username'>
               <label>Username</label>
               <input
@@ -96,7 +89,6 @@ export default function SignupPage() {
                 onChange={username_onchange}
               />
             </div>
-
             <div className='field text_field password'>
               <label>Password</label>
               <input
@@ -106,10 +98,10 @@ export default function SignupPage() {
               />
             </div>
           </div>
-          {errors}
           <div className='submit'>
             <button type='submit'>Sign Up</button>
           </div>
+          <FormErrors errors={errors} />
         </form>
         <div className="already-have-an-account">
           <span>

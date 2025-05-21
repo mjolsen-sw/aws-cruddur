@@ -9,6 +9,8 @@ Parameters:
   # Imported parameters
   ArtifactBucketName:
     Type: String
+  BuildSpec:
+    Type: String
   ClusterStack:
     Type: String
   GithubBranch:
@@ -26,6 +28,9 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: nested/codebuild.yaml
+      Parameters:
+        ArtifactBucketName: !Ref ArtifactBucketName
+        BuildSpec: !Ref BuildSpec
   CodeStarConnection:
     # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codestarconnections-connection.html
     Type: AWS::CodeStarConnections::Connection

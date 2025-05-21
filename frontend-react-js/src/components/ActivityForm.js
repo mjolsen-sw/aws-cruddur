@@ -2,52 +2,48 @@ import './ActivityForm.css';
 import React from "react";
 import process from 'process';
 import { ReactComponent as BombIcon } from './svg/bomb.svg';
-import { getAccessToken } from 'lib/CheckAuth';
+
+import { post } from 'lib/Requests';
+import FormErrors from 'components/FormErrors';
 
 export default function ActivityForm(props) {
   const [count, setCount] = React.useState(0);
   const [message, setMessage] = React.useState('');
   const [ttl, setTtl] = React.useState('7-days');
+  const [errors, setErrors] = React.useState([]);
 
-  const classes = []
-  classes.push('count')
+  const classes = [];
+  classes.push('count');
   if (240 - count < 0) {
-    classes.push('err')
+    classes.push('err');
   }
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities`
-      console.log('onsubmit payload', message)
-      const res = await fetch(backend_url, {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          message: message,
-          ttl: ttl
-        }),
-      });
-      let data = await res.json();
-      if (res.status === 200) {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities`;
+    const payload_data = {
+      message: message,
+      ttl: ttl
+    };
+    const options ={
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      auth: true,
+      success: function (data) {
         // add activity to the feed
         props.setActivities(current => [data, ...current]);
         // reset and close the form
-        setCount(0)
-        setMessage('')
-        setTtl('7-days')
-        props.setPopped(false)
-      } else {
-        console.log(res)
-      }
-    } catch (err) {
-      console.log(err);
+        setCount(0);
+        setMessage('');
+        setTtl('7-days');
+        props.setPopped(false);
+        setErrors([]);
+      },
+      setErrors: setErrors
     }
+    post(url, payload_data, options);
   }
 
   const textarea_onchange = (event) => {
@@ -90,6 +86,7 @@ export default function ActivityForm(props) {
             </select>
           </div>
         </div>
+        <FormErrors errors={errors} />
       </form>
     );
   }

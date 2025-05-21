@@ -6,19 +6,14 @@ class UpdateProfile:
   def run(cognito_user_id, bio, display_name):
     with xray_recorder.in_segment('create_activity_run') as segment:
       model = {
-        'errors': None,
+        'errors': [],
         'data': None
       }
 
       if display_name == None or len(display_name) < 1:
-        model['errors'] = ['display_name_blank']
+        model['errors'].append('display_name_blank')
 
-      if model['errors']:
-        model['data'] = {
-          'bio': bio,
-          'display_name': display_name
-        }
-      else:
+      if len(model['errors']) == 0:
         handle = UpdateProfile.update_profile(bio, display_name, cognito_user_id)
         data = UpdateProfile.query_users_short(handle)
         model['data'] = data

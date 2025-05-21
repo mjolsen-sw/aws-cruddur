@@ -3,6 +3,29 @@
   flex-direction: column;
   border-bottom: solid 1px rgb(60, 54, 79);
   overflow: hidden;
+}
+
+.activity_item:hover,
+.replies .activity_item:hover {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.activity_item:hover:has(.replies .activity_item:hover) {
+  background: none;
+  cursor: default;
+}
+
+.replies {
+  padding-left: 24px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.replies .activity_item {
+  background: var(--fg);
+}
+
+.activity_main {
   padding: 16px;
 }
 

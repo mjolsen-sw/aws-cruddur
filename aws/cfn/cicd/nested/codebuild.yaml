@@ -6,12 +6,13 @@ Description: |
   - CodeBuild Project Role
 
 Parameters:
+  # Imported parameters
+  # These are passed in from the parent stack
   ArtifactBucketName:
     Type: String
-    Default: 'codepipeline-cruddur-artifacts-mjolsen'
   BuildSpec:
     Type: String
-    Default: 'backend-flask/buildspec.yml'
+  # Configurable parameters
   CodeBuildComputeType:
     Type: String
     Default: BUILD_GENERAL1_SMALL

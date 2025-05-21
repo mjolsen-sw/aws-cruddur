@@ -9,7 +9,8 @@ import ActivityForm from 'components/ActivityForm';
 import ProfileHeading from 'components/ProfileHeading';
 import ProfileForm from 'components/ProfileForm';
 
-import { checkAuth, getAccessToken } from 'lib/CheckAuth';
+import { checkAuth } from 'lib/CheckAuth';
+import { get } from 'lib/Requests';
 
 export default function UserFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -23,25 +24,16 @@ export default function UserFeedPage() {
   const params = useParams();
 
   const loadData = async () => {
-    try {
-      const accessToken = await getAccessToken();
-      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/@${params.handle}`;
-      const res = await fetch(backend_url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        },
-        method: "GET"
-      });
-      let resJson = await res.json();
-      if (res.status === 200) {
-        setActivities(resJson.activities);
-        setProfile(resJson.profile);
-      } else {
-        console.log(res);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/@${params.handle}`;
+    const options = {
+      headers: { 'Accept': 'application/json' },
+      auth: true,
+      success: function (data) {
+        setActivities(data.activities);
+        setProfile(data.profile);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    };
+    get(url, options);
   };
 
   React.useEffect(() => {

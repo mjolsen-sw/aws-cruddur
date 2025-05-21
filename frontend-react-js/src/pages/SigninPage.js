@@ -5,15 +5,17 @@ import { Link } from "react-router-dom";
 
 import { signIn } from '@aws-amplify/auth';
 
+import FormErrors from 'components/FormErrors';
+
 export default function SigninPage() {
 
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [cognitoErrors, setCognitoErrors] = React.useState('');
+  const [errors, setErrors] = React.useState('');
 
   const onsubmit = async (event) => {
-    setCognitoErrors('');
     event.preventDefault();
+    setErrors([]);
     try {
       const { nextStep } = await signIn({
         username: email,
@@ -27,7 +29,7 @@ export default function SigninPage() {
         window.location.href = "/confirm";
       }
     } catch (error) {
-      setCognitoErrors(error.message);
+      setErrors([error.message]);
     }
     return false;
   }
@@ -38,11 +40,6 @@ export default function SigninPage() {
 
   const password_onchange = (event) => {
     setPassword(event.target.value);
-  }
-
-  let errors;
-  if (cognitoErrors) {
-    errors = <div className='errors'>{cognitoErrors}</div>;
   }
 
   return (
@@ -74,12 +71,11 @@ export default function SigninPage() {
               />
             </div>
           </div>
-          {errors}
           <div className='submit'>
             <Link to="/forgot" className="forgot-link">Forgot Password?</Link>
             <button type='submit'>Sign In</button>
           </div>
-
+          <FormErrors errors={errors} />
         </form>
         <div className="dont-have-an-account">
           <span>
@@ -88,7 +84,6 @@ export default function SigninPage() {
           <Link to="/signup">Sign up!</Link>
         </div>
       </div>
-
     </article>
   );
 }

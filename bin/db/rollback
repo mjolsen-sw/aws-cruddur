@@ -13,16 +13,16 @@ from lib.db import db
 
 def get_last_successful_run():
   sql = """
-      SELECT last_successful_run
-      FROM public.schema_information
-      LIMIT 1
+    SELECT last_successful_run
+    FROM public.schema_information
+    LIMIT 1
   """
   return int(db.query_value(sql, {}, verbose=False))
  
 def set_last_successful_run(value):
   sql = """
-  UPDATE schema_information
-  SET last_successful_run = %(last_succesful_run)s
+    UPDATE schema_information
+    SET last_successful_run = %(last_succesful_run)s
   """
   db.query_commit(sql, {'last_successful_run': value})
   return value
@@ -46,5 +46,5 @@ for migration_file in migration_files:
         mod = importlib.import_module(module_name)
         print('running rollback: ', module_name)
         mod.migration.rollback()
-        last_successful_run = set_last_successful_run(file_time)
+        last_successful_run = set_last_successful_run(file_time-1)
 print(last_migration_file)

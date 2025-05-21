@@ -12,16 +12,16 @@ from lib.db import db
  
 def get_last_successful_run():
   sql = """
-      SELECT last_successful_run
-      FROM public.schema_information
-      LIMIT 1;
+    SELECT last_successful_run
+    FROM public.schema_information
+    LIMIT 1;
   """
   return int(db.query_value(sql, {}, verbose=False))
  
 def set_last_successful_run(value):
   sql = """
-  UPDATE schema_information
-  SET last_successful_run = %(last_successful_run)s;
+    UPDATE schema_information
+    SET last_successful_run = %(last_successful_run)s;
   """
   db.query_commit(sql, { 'last_successful_run': value }, verbose=False)
   return value
@@ -38,7 +38,7 @@ for migration_file in migration_files:
   match = re.match(r'^\d+', filename)
   if match:
     file_time = int(match.group())
-    if last_successful_run <= file_time:
+    if last_successful_run < file_time:
       mod = importlib.import_module(module_name)
       print('running migration: ', module_name)
       mod.migration.migrate()

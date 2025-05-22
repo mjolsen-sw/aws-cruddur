@@ -53,6 +53,13 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
     - Frontend updates: Needs to track whether or not to highlight to like button depending on if the user has liked the post. Also needs to use the correct route(s) for liking/unliking. Should update the like count after liking/unliking based on the value returned from the backend.
 - [ ] Shares and Reposts
   - Similar in functionality and would have to be designed. Would these have the same lifespan as the original message or do we need to redesign our activity setup? Decisions on how these function on the frontend would have to be decided. Based on how open this is, this is unlikely to be implemented.
+- [ ] New Message Groups
+  - Currently, to message a user that you haven't messaged before you need to manually use the route `/messages/new/{handle}'. Could implement a way to navigate to this page.
+- [ ] Upload Banner Pipeline
+  - Would be practically identical to the avatar upload pipeline.
+- [ ] Clean up User Profile Form
+  - Add the ability to upload a banner.
+  - Update the upload avatar button to be more explicit.
 - [ ] Unit Tests
   - No testing, outside of manual testing, were used in this bootcamp. Could implement unit tests for both the backend and frontend. These could be leveraged by CI/CD pipelines (CodePipeline and GitHub Actions respectively).
 - [ ] 'Search Cruddur'

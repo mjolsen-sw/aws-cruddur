@@ -36,9 +36,9 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
 
 ## Not Completed in Project (To be potentially completed)
 - [ ] Notifications Page
--- The expectations for what to show in the `/notifications` routed remained undefined and stubbed. This prevents plans to complete this.
+  - The expectations for what to show in the `/notifications` routed remained undefined and stubbed. This prevents plans to complete this.
 - [ ] Real-time messaging with AppSync
--- AppSync was not covered in the bootcamp. Completion requires a personal study and implementation. Potential frontend changes would be required, especially if we want something similar to how modern social media handles messages (it would effectively require a miniature application).
+  - AppSync was not covered in the bootcamp. Completion requires a personal study and implementation. Potential frontend changes would be required, especially if we want something similar to how modern social media handles messages (it would effectively require a miniature application).
 - [ ] Deletion of expired posts
   - This would require a Lambda Function that would delete a post and recursively delete its children replies. There would also need to be a mechanism to schedule the function calls.
     - Recurssive deletions of replies can be simplified by replies taking on the expiration time of the message they are replying to.

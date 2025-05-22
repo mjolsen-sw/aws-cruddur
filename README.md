@@ -72,3 +72,5 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
   - Would also require some form of machine learning. Along with being outside the scope of the project, there are not going to be a large number of users making this highly unlikely to be implemented.
 - [ ] 'About', 'Terms of Service', 'Privacy Policy'
   - Will remain just stubs as this is not a real social media platform.
+- [ ] Use an Auto Scaling Group (ASG) for the backend task.
+  - While there is no expected traffic spikes expected, it would be good practice to use an ASG in the backend target group.

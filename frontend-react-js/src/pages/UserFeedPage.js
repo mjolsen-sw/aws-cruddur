@@ -12,9 +12,12 @@ import ReplyForm from 'components/ReplyForm';
 
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
+import { searchActivities } from 'lib/SearchActivities';
 
 export default function UserFeedPage() {
   const [activities, setActivities] = React.useState([]);
+  const [search, setSearch] = React.useState('');
+  const [searchedActivities, setSearchedActivities] = React.useState([]);
   const [profile, setProfile] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [poppedProfile, setPoppedProfile] = React.useState([]);
@@ -57,6 +60,15 @@ export default function UserFeedPage() {
     checkAuth(setUser);
   }, [])
 
+  React.useEffect(() => {
+    if (search) {
+      const results = searchActivities(activities, search);
+      setSearchedActivities(results);
+    } else {
+      setSearchedActivities(activities);
+    }
+  }, [search, activities]);
+
   return (
     <article>
       <DesktopNavigation user={user} active={'profile'} setPopped={setPopped} />
@@ -72,7 +84,7 @@ export default function UserFeedPage() {
           popped={poppedReply}
           setPopped={setPoppedReply}
           setActivities={setActivities}
-          activities={activities}
+          activities={searchedActivities}
         />
         <div className='activity_feed'>
           <ProfileHeading
@@ -81,13 +93,13 @@ export default function UserFeedPage() {
             user={user}
           />
           <ActivityFeed
-            activities={activities}
+            activities={searchedActivities}
             setReplyActivity={setReplyActivity}
             setPopped={setPoppedReply}
           />
         </div>
       </div>
-      <DesktopSidebar user={user} />
+      <DesktopSidebar user={user} search={search} setSearch={setSearch} />
     </article>
   );
 }

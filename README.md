@@ -63,9 +63,9 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
 - [ ] Unit Tests
   - No testing, outside of manual testing, were used in this bootcamp. Could implement unit tests for both the backend and frontend. These could be leveraged by CI/CD pipelines (CodePipeline and GitHub Actions respectively).
 - [x] 'Search Cruddur'
-  - ~~I'm assuming this would be a simple activity search function.
-    - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).
-    - ~~Would benefit to have replies linking to the activity their replying to.
+  - ~~I'm assuming this would be a simple activity search function.~~
+    - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).~~
+    - ~~Would benefit to have replies linking to the activity their replying to.~~
   - Simple search given no pagination. Filtered activities in HomeFeedPage and UserFeedPage while filtered replies in ActivitiyShowPage.
 - [ ] Trending
   - Would require some form of machine learning which is outside the scope of what I wanted from this project, making it highly unlikely to be implemented. Also, have messages deleted consistently would provide a potential challenge to the models.

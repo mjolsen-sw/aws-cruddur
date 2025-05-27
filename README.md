@@ -44,7 +44,7 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
 - [ ] Deletion of expired posts
   - This would require a Lambda Function that would delete a post and recursively delete its children replies. There would also need to be a mechanism to schedule the function calls.
     - Recurssive deletions of replies can be simplified by replies taking on the expiration time of the message they are replying to.
-    - The function schedule the next function call to be the min of the next expiration time or the minimum life span of a new post (1 hour).
+    - The function schedules the next function call to be the min of the next expiration time or the minimum life span of a new post (1 hour).
 - [ ] Likes
   - This would involve a small DB redesign, some query changes, additional backend route(s), and updates to the frontend.
     - DB redesign: Currently uses an integer to count likes. There should be a seperate table with two fields (user_uuid, activity_uuid) to match users to liked posts.

@@ -62,7 +62,7 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
   - Update the upload avatar button to be more explicit.
 - [ ] Unit Tests
   - No testing, outside of manual testing, were used in this bootcamp. Could implement unit tests for both the backend and frontend. These could be leveraged by CI/CD pipelines (CodePipeline and GitHub Actions respectively).
-- [x] 'Search Cruddur'
+- [x] 'Search Cruddur' - **COMPLETED**
   - ~~I'm assuming this would be a simple activity search function.~~
     - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).~~
     - ~~Would benefit to have replies linking to the activity their replying to.~~

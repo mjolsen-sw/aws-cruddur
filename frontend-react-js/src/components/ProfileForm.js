@@ -63,10 +63,6 @@ export default function ProfileForm(props) {
       },
       auth: true,
       success: function (data) {
-        // setBio("");
-        // setDisplayName("");
-        // props.setPopped(false);
-        // setErrors([]);
         window.location.reload();
       },
       setErrors: setErrors
@@ -102,7 +98,10 @@ export default function ProfileForm(props) {
             </div>
           </div>
           <div className="popup_content">
-            <input type="file" name="avatarupload" onChange={s3upload} accept="image/jpeg" />
+            <div className="field upload_avatar">
+              <label>Upload Avatar</label>
+              <input type="file" name="avatarupload" onChange={s3upload} accept="image/jpeg" />
+            </div>
             <div className="field display_name">
               <label>Display Name</label>
               <input

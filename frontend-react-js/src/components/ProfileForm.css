@@ -19,7 +19,8 @@ form.profile_form textarea {
   padding: 16px;
 }
 
-form.profile_form .field.display_name {
+form.profile_form .field.display_name,
+.field.upload_avatar {
   margin-bottom: 24px;
 }
 

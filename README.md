@@ -32,9 +32,21 @@ The `/journal` directory contains
 - [x] [Week 12](journal/week12.md)
 
 ## Completed Project
+### Final Logical Diagram
+![Final Logical Diagram](_docs/assets/final-logical-diagram.png)
+
+### Application Images
 TODO: Breakdown of what was completed in the bootcamp with pictures showing the final product by the end of instruction.
 
 ## Not Completed in Project (To be potentially completed)
+- [x] 'Search Cruddur' - **COMPLETED**
+  - ~~I'm assuming this would be a simple activity search function.~~
+    - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).~~
+    - ~~Would benefit to have replies linking to the activity their replying to.~~
+  - Simple search given no pagination. Filtered activities in HomeFeedPage and UserFeedPage while filtered replies in ActivitiyShowPage.
+- [x] Clean up User Profile Form
+  - ~~Add the ability to upload a banner.~~
+  - Update the upload avatar button to be more explicit.
 - [ ] Notifications Page
   - The expectations for what to show in the `/notifications` route remained undefined and stubbed. This prevents plans to complete this.
 - [ ] '... More'
@@ -57,16 +69,8 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
   - Currently, to message a user that you haven't messaged before you need to manually use the route `/messages/new/{handle}'. Could implement a way to navigate to this page.
 - [ ] Upload Banner Pipeline
   - Would be practically identical to the avatar upload pipeline.
-- [ ] Clean up User Profile Form
-  - Add the ability to upload a banner.
-  - Update the upload avatar button to be more explicit.
 - [ ] Unit Tests
   - No testing, outside of manual testing, were used in this bootcamp. Could implement unit tests for both the backend and frontend. These could be leveraged by CI/CD pipelines (CodePipeline and GitHub Actions respectively).
-- [x] 'Search Cruddur' - **COMPLETED**
-  - ~~I'm assuming this would be a simple activity search function.~~
-    - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).~~
-    - ~~Would benefit to have replies linking to the activity their replying to.~~
-  - Simple search given no pagination. Filtered activities in HomeFeedPage and UserFeedPage while filtered replies in ActivitiyShowPage.
 - [ ] Trending
   - Would require some form of machine learning which is outside the scope of what I wanted from this project, making it highly unlikely to be implemented. Also, have messages deleted consistently would provide a potential challenge to the models.
 - [ ] Suggested Users

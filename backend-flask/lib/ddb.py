@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 class Ddb:
   def __init__(self):
-    self._table_name = 'cruddur-messages'
+    self._table_name = os.getenv("DDB_TABLE_NAME")
     self._init_client()
     atexit.register(self._close_client)
 

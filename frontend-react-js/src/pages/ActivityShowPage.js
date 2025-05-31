@@ -10,9 +10,12 @@ import ReplyForm from 'components/ReplyForm';
 
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
+import { searchReplies } from 'lib/SearchActivities';
 
 export default function ActivityShowPage() {
   const [activities, setActivities] = React.useState([]);
+  const [search, setSearch] = React.useState('');
+  const [searchedActivities, setSearchedActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
   const [poppedReply, setPoppedReply] = React.useState(false);
   const [replyActivity, setReplyActivity] = React.useState({});
@@ -41,6 +44,15 @@ export default function ActivityShowPage() {
     get(url, options);
   }, [params.activity_uuid]);
 
+  React.useEffect(() => {
+    if (search) {
+      const results = searchReplies(activities, search);
+      setSearchedActivities(results);
+    } else {
+      setSearchedActivities(activities);
+    }
+  }, [search, activities]);
+
   return (
     <article>
       <DesktopNavigation user={user} active={'show'} setPopped={setPopped} />
@@ -55,17 +67,17 @@ export default function ActivityShowPage() {
           popped={poppedReply}
           setPopped={setPoppedReply}
           setActivities={setActivities}
-          activities={activities}
+          activities={searchedActivities}
         />
         <div className="back" onClick={() => navigate(-1)}>&larr;</div>
         <ActivityFeed
           title="Show"
           setReplyActivity={setReplyActivity}
           setPopped={setPoppedReply}
-          activities={activities}
+          activities={searchedActivities}
         />
       </div>
-      <DesktopSidebar user={user} />
+      <DesktopSidebar user={user} search={search} setSearch={setSearch} />
     </article>
   );
 }

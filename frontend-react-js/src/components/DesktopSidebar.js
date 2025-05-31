@@ -13,7 +13,7 @@ export default function DesktopSidebar(props) {
   ]
 
   const users = [
-    { "display_name": "Andrew Brown", "handle": "andrewbrown" }
+    { "display_name": "Matt", "handle": "calm" }
   ]
 
   let trending;
@@ -28,7 +28,7 @@ export default function DesktopSidebar(props) {
 
   return (
     <section>
-      <Search />
+      <Search search={props.search} setSearch={props.setSearch} />
       {trending}
       {suggested}
       {join}

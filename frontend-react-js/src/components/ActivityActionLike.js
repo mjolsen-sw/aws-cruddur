@@ -3,6 +3,7 @@ import { ReactComponent as HeartIcon } from './svg/heart.svg';
 export default function ActivityActionLike(props) {
   const onclick = (event) => {
     event.preventDefault();
+    event.stopPropagation();
     console.log('toggle like/unlike');
     return false;
   }

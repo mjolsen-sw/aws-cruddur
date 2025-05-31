@@ -8,15 +8,21 @@ import ActivityFeed from 'components/ActivityFeed';
 import ActivityForm from 'components/ActivityForm';
 import ProfileHeading from 'components/ProfileHeading';
 import ProfileForm from 'components/ProfileForm';
+import ReplyForm from 'components/ReplyForm';
 
 import { checkAuth } from 'lib/CheckAuth';
 import { get } from 'lib/Requests';
+import { searchActivities } from 'lib/SearchActivities';
 
 export default function UserFeedPage() {
   const [activities, setActivities] = React.useState([]);
+  const [search, setSearch] = React.useState('');
+  const [searchedActivities, setSearchedActivities] = React.useState([]);
   const [profile, setProfile] = React.useState([]);
   const [popped, setPopped] = React.useState([]);
   const [poppedProfile, setPoppedProfile] = React.useState([]);
+  const [poppedReply, setPoppedReply] = React.useState([]);
+  const [replyActivity, setReplyActivity] = React.useState({});
   const [user, setUser] = React.useState(null);
   const dataFetchedRef = React.useRef(false);
   const userFetchedRef = React.useRef(false);
@@ -54,6 +60,15 @@ export default function UserFeedPage() {
     checkAuth(setUser);
   }, [])
 
+  React.useEffect(() => {
+    if (search) {
+      const results = searchActivities(activities, search);
+      setSearchedActivities(results);
+    } else {
+      setSearchedActivities(activities);
+    }
+  }, [search, activities]);
+
   return (
     <article>
       <DesktopNavigation user={user} active={'profile'} setPopped={setPopped} />
@@ -64,12 +79,27 @@ export default function UserFeedPage() {
           popped={poppedProfile}
           setPopped={setPoppedProfile}
         />
+        <ReplyForm
+          activity={replyActivity}
+          popped={poppedReply}
+          setPopped={setPoppedReply}
+          setActivities={setActivities}
+          activities={searchedActivities}
+        />
         <div className='activity_feed'>
-          <ProfileHeading setPopped={setPoppedProfile} profile={profile} user={user} />
-          <ActivityFeed activities={activities} />
+          <ProfileHeading
+            setPopped={setPoppedProfile}
+            profile={profile}
+            user={user}
+          />
+          <ActivityFeed
+            activities={searchedActivities}
+            setReplyActivity={setReplyActivity}
+            setPopped={setPoppedReply}
+          />
         </div>
       </div>
-      <DesktopSidebar user={user} />
+      <DesktopSidebar user={user} search={search} setSearch={setSearch} />
     </article>
   );
 }

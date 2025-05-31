@@ -35,8 +35,54 @@ The `/journal` directory contains
 ### Final Logical Diagram
 ![Final Logical Diagram](_docs/assets/final-logical-diagram.png)
 
+### CloudFormation Stacks
+![CloudFormation Stacks](_docs/assets/cfn-stacks.png)
+
+### Route 53 Records
+![Route 53 Records](_docs/assets/route-53.png)
+
+### Backend Service
+![Backend Service](_docs/assets/backend-service.png)
+
+### S3 Buckets
+![S3 Buckets](_docs/assets/s3-buckets.png)
+
+### Lambda Functions
+![Lambda Functions](_docs/assets/lambdas.png)
+
 ### Application Images
-TODO: Breakdown of what was completed in the bootcamp with pictures showing the final product by the end of instruction.
+#### Sign Up
+First step in user creation through Cognito. Requires confirming email.
+![Sign Up](_docs/assets/sign-up.png)
+#### Confirmation
+Confirming email through Cognito triggers a lambda function to create user in DB.
+![Confirmation](_docs/assets/confirm.png)
+#### Home
+List of all non-reply messages on the platform without pagination.
+![Home](_docs/assets/home.png)
+#### Create Post
+Basic post creation.
+![Create Post](_docs/assets/post.png)
+#### Create Reply
+Create reply linked to a post. Can be viewed when clicking into original post.
+![](_docs/assets/reply.png)
+#### Show Activitiy
+Shows a post and all of its replies.
+![Show Activitiy](_docs/assets/activity-show.png)
+#### Search
+Filter posts for name, handle, or message (done completely on the frontend).
+![Search](_docs/assets/search.png)
+#### Profile
+Shows basic user information from database.
+![Profile](_docs/assets/profile.png)
+#### Profile Form
+Allows updating of display name, bio, or to upload an avatar.
+Generates pre-signed URL for S3 upload by calling API Gateway, passed a lambda authorizer, and calling a lambda.
+Sends image to pre-signed URL triggering a lambda to process and outputing to bucket read by CloudFront.
+![Profile Form](_docs/assets/profile-form.png)
+#### Messages
+Messages managed by DynamoDB and processed by a lambda triggered by the DynamoDB stream.
+![Messages](_docs/assets/messages.png)
 
 ## Not Completed in Project (To be potentially completed)
 - [x] 'Search Cruddur' - **COMPLETED**
@@ -44,7 +90,7 @@ TODO: Breakdown of what was completed in the bootcamp with pictures showing the 
     - ~~Could do a basic implementation the returns a flat list of activities that contain what is searched (dumb search).~~
     - ~~Would benefit to have replies linking to the activity their replying to.~~
   - Simple search given no pagination. Filtered activities in HomeFeedPage and UserFeedPage while filtered replies in ActivitiyShowPage.
-- [x] Clean up User Profile Form
+- [x] Clean up User Profile Form - **COMPLETED**
   - ~~Add the ability to upload a banner.~~
   - Update the upload avatar button to be more explicit.
 - [ ] Notifications Page

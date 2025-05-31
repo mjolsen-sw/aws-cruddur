@@ -32,6 +32,10 @@ jobs:
 
       - name: Build the static site
         run: bin/frontend/static-build
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_COGNITO_USER_POOL_ID: ${{ secrets.AWS_COGNITO_USER_POOL_ID }}
+          AWS_COGNITO_USER_POOL_CLIENT_ID: ${{ secrets.AWS_COGNITO_USER_POOL_CLIENT_ID }}
 
       - name: Install gems
         run: gem install dotenv aws_s3_website_sync

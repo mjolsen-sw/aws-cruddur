@@ -39,7 +39,10 @@ export default function ReplyForm(props) {
         // ignore if replying to a reply
         if (found_activity !== undefined) {
           found_activity.reply_count += 1;
-          found_activity.replies.push(data);
+          // safeguard against replies not being returned with activity
+          if (found_activity.replies !== undefined) {
+            found_activity.replies.push(data);
+          }
         }
 
         props.setActivities(activities_deep_copy);

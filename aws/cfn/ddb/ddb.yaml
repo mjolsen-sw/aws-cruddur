@@ -100,7 +100,7 @@ Resources:
     Properties:
       PolicyName: "LambdaExecutionAccessPolicy"
       Roles:
-        - !Select [1, !Split ["/", !Ref StreamProcessorRoleArn]]
+        - !Select [2, !Split ["/", !Ref StreamProcessorRoleArn]]
       PolicyDocument:
         Version: "2012-10-17"
         Statement:

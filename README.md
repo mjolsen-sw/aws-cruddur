@@ -53,7 +53,7 @@ The `/journal` directory contains
 ### Application Images
 #### Sign Up
 First step in user creation through Cognito. Requires confirming email.
-![Sign Up](_docs/assets/sign-up.png)
+![Sign Up](_docs/assets/signup.png)
 #### Confirmation
 Confirming email through Cognito triggers a lambda function to create user in DB.
 ![Confirmation](_docs/assets/confirm.png)

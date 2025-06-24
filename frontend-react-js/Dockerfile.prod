@@ -13,9 +13,10 @@ ENV REACT_APP_AWS_COGNITO_REGION=$REACT_APP_AWS_COGNITO_REGION
 ENV REACT_APP_AWS_USER_POOLS_ID=$REACT_APP_AWS_USER_POOLS_ID
 ENV REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID
 
-COPY . ./frontend-react-js
 WORKDIR /frontend-react-js
+COPY package*.json ./
 RUN npm install
+COPY . .
 RUN npm run build
 
 # New Base Image ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,0 +1,10 @@
+__pycache__
+
+Dockerfile*
+buildspec.yml
+
+openapi-3.0.yml
+
+README.md
+
+.gitignore
